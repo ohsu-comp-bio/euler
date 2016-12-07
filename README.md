@@ -8,6 +8,8 @@ Euler illustrates how the Keystone OpenStack project that provides Identity, Tok
 
 [Representative use cases](docs/use_cases.md) to drive discussion of distributed multi-tenant authorization needed for multi-institution pan-cancer research.
 
+![image](https://cloud.githubusercontent.com/assets/47808/20950267/9674d14c-bbd3-11e6-9791-55966149880e.png)
+
 
 ## Quick Start Using Docker Compose
 
@@ -17,12 +19,12 @@ Simply run:
 
 ## How to use this image
 
-It may takes seconds to do some initial work, you can use `docker logs` to detect the progress. Once the Openstck Keystone Service is started, you can verify operation of the Identity service as follows:
+It may takes seconds to do some initial work, you can use `docker logs` to detect the progress. Once the Openstack Keystone Service is started, you can verify operation of the Identity service as follows:
 
 ```
 $ docker-compose build keystone
 $ docker-compose up -d
-$ docker exec -it dmsaa_keystone_1 bash
+$ docker exec -it euler_keystone_1 bash
 
 # in docker container
 
@@ -50,7 +52,16 @@ os role add --project baml --user <any ohsu user> --user-domain ohsu  member
 # show membership
 os role assignment list  --name
 
-# authenticate
++--------+---------------+-------+---------------+--------+-----------+
+| Role   | User          | Group | Project       | Domain | Inherited |
++--------+---------------+-------+---------------+--------+-----------+
+| admin  | admin@Default |       | admin@Default |        | False     |
+| member | walsbr@ohsu   |       | ccc@Default   |        | False     |
+| member | walsbr@ohsu   |       | baml@Default  |        | False     |
++--------+---------------+-------+---------------+--------+-----------+
+
+
+# authenticate (if using OHSU behind firewall)
 export OHSU="--os-username <any ohsu user>
 --os-auth-url http://controller:35357/v3
 --os-user-domain-id <ohsu domain id from domain list>
@@ -61,8 +72,41 @@ export OHSU="--os-username <any ohsu user>
 os token issue  $OHSU --os-project-name ccc
 os token issue  $OHSU --os-project-name baml
 
++------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Field      | Value                                                                                                                                                                                                      |
++------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| expires    | 2016-12-07 02:22:39+00:00                                                                                                                                                                                  |
+| id         | gAAAAABYR2RfgW1wsOffKsaeok43wbP7HIKewpJaqcmxWsMDryxLlryA2Glo7OQ_ha6vM2KhSzjeQkTi6Ou3z6Erpey_KiSmHpnmr7Z1oi1aByXdJp4f7FURHvDR5oZKg-                                                                         |
+|            | 5JQXU_EQesT8R_xsR3wOVtJgjQcVmSp_yXdz5IgzQjj8h8H2uGLd1AJiFX2lxIEI2mUpUnRSSY6jy8TEL_ixDuNRejgHM2Zui0Bmh78dyJVjM6CK7tkKY                                                                                      |
+| project_id | 2363da9faceb46b3b54e332966e39f67                                                                                                                                                                           |
+| user_id    | ba9096ee5e956e35452227fe6a4f36f994ec34495030763706cdf530f870949e                                                                                                                                           |
++------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
 # this should fail
 os token issue  $OHSU --os-project-name admin
+
+# authenticate (if using public ldap server forumsys outside firewall)
+export FORUMSYS="--os-username tesla
+--os-auth-url http://controller:35357/v3  
+--os-user-domain-id <forumsys domain id from domain list>
+--os-identity-api-version 3     
+--os-password password"
+
+
+os role add --project ccc --user tesla --user-domain forumsys  member
+os role add --project baml --user tesla  --user-domain forumsys  member
+
+os token issue  $FORUMSYS --os-project-name baml
++------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Field      | Value                                                                                                                                                                                        |
++------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| expires    | 2016-12-07 05:00:24+00:00                                                                                                                                                                    |
+| id         | gAAAAABYR4lYzHAf8oGY2MimaeJXy2I0tcvsfgNrrmJW6k4AJs2ZcPO92so7lVHXitOs_Zn36my0cOFkBAmcAF-4d8JdJY61xfuDcthETYVVN9I_SUzmtOPtMjnoIjkR1tgYZRorY7b9q7I6DSALpZ51MQwox7EHZ_TcCBdlBJZZKv9JC-           |
+|            | FUVbfTLzpN_O6jukhPdcWhI_TBw-tGoV5nd308kyXoMr3qwrSMBR20kX81zB6BbamjM6E                                                                                                                        |
+| project_id | 0369f74274b1499eb9257994b8b67087                                                                                                                                                             |
+| user_id    | 0b42e922b1712df2d994b91eab805aacfdaf4aedc4b8e609284c7f2dc021129b                                                                                                                             |
++------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
 
 ```
 
@@ -93,6 +137,13 @@ Test bootstrap setup
 
 ## TODO
 
+### web app
+
+The webapp (dcc portal) needs to integrate to keystone using either JWT or OAUTH
+
+![image](https://cloud.githubusercontent.com/assets/47808/20950887/4c65e83a-bbd7-11e6-8771-ffd9a95844c9.png)
+
+
 ### mysql
 
 Openstack Keystone Service uses an SQL database (default sqlite) to store data. The official documentation recommends use MariaDB or MySQL.
@@ -103,11 +154,16 @@ The following environment variables should be change according to your practice.
 * `-e MYSQL_ROOT_PASSWORD=...`: Defaults to the value of the `MYSQL\_ROOT\_PASSWORD` environment variable from the linked mysql container.
 * `-e MYSQL_HOST=...`: If you use an external database, specify the address of the database. Defautls to "mysql".
 
-### ldap
+### Federation
+
+In order to integrate to remote providers (google or other keystone instances) the keystone app will need to run under apache.
+
+![image](https://cloud.githubusercontent.com/assets/47808/20950402/4ff71666-bbd4-11e6-8719-b8614050c71d.png)
+
 
 
 ## Utility
 
 ```
-alias recreate='docker-compose stop keystone ;  docker-compose rm keystone ; docker rmi dmsaa_keystone ; docker-compose build keystone ;'
+alias recreate='docker-compose stop keystone ;  docker-compose rm keystone ; docker rmi euler_keystone ; docker-compose build keystone ;'
 ```
