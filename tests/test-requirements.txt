@@ -1,0 +1,2 @@
+python-openstackclient==3.2.0
+pytest

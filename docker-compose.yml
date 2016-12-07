@@ -1,0 +1,37 @@
+version: '2.1'
+services:
+  # TODO test uses internal sqlite, prod should use mariadb
+  # mysql_db:
+  #   image: mysql:5.7
+  #   # volumes:
+  #   #   - "./.data/db:/var/lib/mysql"
+  #   restart: always
+  #   environment:
+  #     MYSQL_ROOT_PASSWORD: something_secret
+
+  keystone:
+    # depends_on:
+    #   - mysql_db
+    build:
+      context: services/keystone
+    # links:
+    #   - mysql_db
+    ports:
+      - "35357:35357"
+      - "5000:5000"
+    restart: always
+    volumes:
+      - "./.db:/db"
+    hostname: controller
+    environment:
+      # coordinate with .env & services/keystone/bootstrap
+      ADMIN_TOKEN: ${ADMIN_TOKEN}
+      ADMIN_PROJECT_NAME: ${ADMIN_PROJECT_NAME:-admin}
+      ADMIN_USER_NAME: ${ADMIN_USER_NAME:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      ADMIN_DOMAIN_NAME: ${ADMIN_DOMAIN_NAME:-default}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-${ADMIN_USER_NAME}@example.com}
+      ADMIN_REGION_ID: ${ADMIN_REGION_ID}
+      ADMIN_ROLE_NAME: ${ADMIN_ROLE_NAME:-admin}
+      OHSU_ADMIN_LDAP_CN: ${OHSU_ADMIN_LDAP_CN}
+      OHSU_ADMIN_LDAP_PASSWORD: ${OHSU_ADMIN_LDAP_PASSWORD}
