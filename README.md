@@ -10,6 +10,8 @@ Euler illustrates how the Keystone OpenStack project that provides Identity, Tok
 
 ![image](https://cloud.githubusercontent.com/assets/47808/20950267/9674d14c-bbd3-11e6-9791-55966149880e.png)
 
+[This documentation](http://docs.openstack.org/developer/keystone/) is primarily targeted towards contributors of the project, and assumes that you are already familiar with Keystone from an end-user perspective; however, end users, deployers, and operators will also find it useful.
+
 
 ## Quick Start Using Docker Compose
 
@@ -137,11 +139,6 @@ Test bootstrap setup
 
 ## TODO
 
-### web app
-
-The webapp (dcc portal) needs to integrate to keystone using either JWT or OAUTH
-
-![image](https://cloud.githubusercontent.com/assets/47808/20950887/4c65e83a-bbd7-11e6-8771-ffd9a95844c9.png)
 
 
 ### mysql

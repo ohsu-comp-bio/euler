@@ -1,0 +1,714 @@
+info:
+  title: YA-DMS  API description
+  description: |-
+    ### "Yet Another Data Management Service"
+    ##### Key endpoints
+
+    ![image](https://cloud.githubusercontent.com/assets/47808/20463919/517044ca-aef2-11e6-8d8a-3b1a1f24a1f4.png)
+
+
+
+  version: '0.1'
+paths:
+  /files:
+    get:
+      summary: Searches resources and associated meta data.
+      responses:
+        '200':
+          description: Document fetched successfully
+          schema:
+            $ref: '#/definitions/SearchResponse'
+      parameters:
+        - $ref: '#/parameters/filter'
+        - $ref: '#/parameters/sort'
+        - $ref: '#/parameters/fields'
+        - $ref: '#/parameters/size'
+        - $ref: '#/parameters/from'
+        - $ref: "#/parameters/Authorization"
+
+      tags:
+        - Researcher
+        - Informatician
+        - Biospecimen
+        - Search
+
+      description: |+
+
+        See this [overview from GDC](https://gdc-docs.nci.nih.gov/API/Users_Guide/Search_and_Retrieval/#files-endpoint).
+
+
+
+    post:
+      summary: Creates a File document, updates search index
+      description: |-
+        It is necessary to describe files `independently of project submission`.  For example, a `reference genome` resource is used across all projects.   This entry point allows Administrator and Informaticians to create files outside of the `Project` context.   Files created in this manner are also  returned in `Search`.
+      responses:
+        '201':
+          description: File document created successfully
+      parameters:
+        - in: body
+          name: File
+          required: true
+          schema:
+            $ref: '#/definitions/File'
+        - $ref: "#/parameters/Authorization"
+      tags:
+        - File
+        - Administrator
+        - Informatician
+
+  /files/summary:
+    get:
+      summary: Provides aggregated results of the current search.
+      description: Histograms of [age_at_diagnosis, project_code, individual, sample, file]
+      responses:
+        '200':
+          description: Document fetched successfully
+          schema:
+            $ref: '#/definitions/SearchResponse'
+      parameters:
+        - $ref: '#/parameters/filter'
+        - $ref: "#/parameters/Authorization"
+
+
+      tags:
+        - Researcher
+        - Informatician
+        - Biospecimen
+        - Search
+
+  '/files/{_id}':
+    patch:
+      summary: Updates a File document, updates search index
+      description: |-
+        Administrator and Informaticians can update files `created outside of project submission` can be updated
+      responses:
+        '200':
+          description: File document updated successfully
+      parameters:
+        - $ref: '#/parameters/File__id'
+        - in: body
+          name: File
+          required: true
+          schema:
+            $ref: '#/definitions/File'
+        - $ref: "#/parameters/Authorization"
+      tags:
+        - File
+        - Administrator
+        - Informatician
+
+    delete:
+      summary: Deletes a File document, removes from search index
+      responses:
+        '200':
+          description: File document deleted successfully
+      parameters:
+        - $ref: '#/parameters/File__id'
+        - $ref: "#/parameters/Authorization"
+      tags:
+        - File
+        - Administrator
+        - Informatician
+
+  '/submission/{program_name}/{project_code}/{_id}':
+    get:
+      summary: >-
+        Retrieves one or more submission objects.
+      responses:
+        '200':
+          description: >-
+            An array of submission objects.
+          schema:
+            items:
+              $ref: '#/definitions/Submission'
+            type: array
+      parameters:
+        - $ref: '#/parameters/program_name'
+        - $ref: '#/parameters/project_code'
+        - $ref: '#/parameters/submission_id'
+        - $ref: "#/parameters/Authorization"
+      tags:
+        - Submission
+        - Informatician
+
+      description: |+
+
+        * /submission/XXX     - returns all submissions for all projects in program 'XXX'
+        * /submission/XXX/YYY - returns all submissions program 'XXX', project 'YYY'
+        * /submission/XXX/YYY/nnnn - returns submission  program 'XXX', project 'YYY', id 'nnnnn'
+
+    delete:
+      summary: >-
+        Deletes all submissions and their associated entities
+      parameters:
+        - $ref: '#/parameters/program_name'
+        - $ref: '#/parameters/project_code'
+        - $ref: '#/parameters/submission_id'
+        - $ref: "#/parameters/Authorization"
+
+      responses:
+        '200':
+          description: operation has been successful
+      tags:
+        - Submission
+        - Informatician
+
+    patch:
+      summary: Updates a Submission document
+      responses:
+        '200':
+          description: Submission document updated successfully
+      parameters:
+        - $ref: '#/parameters/program_name'
+        - $ref: '#/parameters/project_code'
+        - $ref: '#/parameters/submission_id'
+        - in: body
+          name: Submission
+          required: true
+          schema:
+            $ref: '#/definitions/Submission'
+      tags:
+        - Submission
+        - Informatician
+
+  '/submission/{program_name}/{project_code}':
+    post:
+      summary: >-
+        Stores one or more submissions and child entities
+      parameters:
+        - in: body
+          name: Submission
+          required: true
+          schema:
+            $ref: '#/definitions/Submission'
+        - $ref: '#/parameters/program_name'
+        - $ref: '#/parameters/project_code'
+        - $ref: "#/parameters/Authorization"
+      responses:
+        '200':
+          description: operation has been successful
+      tags:
+        - Submission
+        - Informatician
+      description: |+
+        Validate that project and program exist before submission
+        Validate and save associated entities
+        see [here for more](https://gdc-docs.nci.nih.gov/API/Users_Guide/Submission/#making-requests-to-the-submission-api)
+
+
+  '/programs':
+    get:
+      summary: Retrieves one or more programs
+      parameters:
+        - $ref: "#/parameters/Authorization"
+      responses:
+        '200':
+          description: An array of programs
+          schema:
+            items:
+              $ref: '#/definitions/Program'
+            type: array
+      tags:
+        - Program
+        - Administrator
+
+    post:
+      summary: Stores one or more programs
+      parameters:
+        - in: body
+          name: Program
+          required: true
+          schema:
+            $ref: '#/definitions/Program'
+        - $ref: "#/parameters/Authorization"
+      responses:
+        '200':
+          description: operation has been successful
+      tags:
+        - Program
+        - Administrator
+    delete:
+      summary: Deletes all programs
+      parameters:
+        - $ref: "#/parameters/Authorization"
+      responses:
+        '200':
+          description: operation has been successful
+      tags:
+        - Program
+        - Administrator
+
+  '/programs/{programId}':
+    get:
+      summary: Retrieves a Program document
+      responses:
+        '200':
+          description: Program document fetched successfully
+          schema:
+            $ref: '#/definitions/Program'
+      parameters:
+        - $ref: '#/parameters/Program__id'
+        - $ref: "#/parameters/Authorization"
+      tags:
+        - Program
+        - Administrator
+
+    patch:
+      summary: Updates a Program document
+      responses:
+        '200':
+          description: Program document updated successfully
+      parameters:
+        - $ref: '#/parameters/Program__id'
+        - in: body
+          name: Program
+          required: true
+          schema:
+            $ref: '#/definitions/Program'
+        - $ref: "#/parameters/Authorization"
+      tags:
+        - Program
+        - Administrator
+    delete:
+      summary: Deletes a Program document
+      responses:
+        '200':
+          description: Program document deleted successfully
+      parameters:
+        - $ref: '#/parameters/Program__id'
+        - $ref: "#/parameters/Authorization"
+      tags:
+        - Program
+        - Administrator
+
+  '/projects':
+    get:
+      summary: Retrieves one or more projects
+      parameters:
+        - $ref: "#/parameters/Authorization"
+      responses:
+        '200':
+          description: An array of projects
+          schema:
+            items:
+              $ref: '#/definitions/Project'
+            type: array
+      tags:
+        - Project
+        - Administrator
+
+  '/projects/{projectId}':
+    get:
+        summary: Retrieves one or more projects
+        parameters:
+          - $ref: '#/parameters/Project__id'
+          - $ref: "#/parameters/Authorization"
+        responses:
+          '200':
+            description: Project document fetched successfully
+            schema:
+              $ref: '#/definitions/Project'
+        tags:
+          - Project
+          - Administrator
+
+
+
+  '/login':
+    post:
+      summary: Authenticates user, returns token
+      parameters:
+        - in: body
+          name: Login
+          required: true
+          schema:
+            $ref: '#/definitions/Login'
+      responses:
+        '200':
+          description: Schema document fetched successfully
+        '401':
+          description: |-
+            `{'message': 'Invalid user/password'}`
+      tags:
+        - Administrator
+        - Informatician
+        - Utility
+        - Development
+
+  '/logout':
+    post:
+      summary: De-authenticates user
+      parameters:
+        - $ref: "#/parameters/Authorization"
+      responses:
+        '200':
+          description: |-
+            `{'message': 'development user logged out'}`
+      tags:
+        - Administrator
+        - Informatician
+        - Utility
+        - Development
+
+  '/schemas':
+    get:
+      summary: Retrieves current schemas
+      responses:
+        '200':
+          description: Schema document fetched successfully
+      tags:
+        - Administrator
+        - Informatician
+        - Utility
+        - Development
+
+
+  '/status':
+    get:
+      summary: retrieves current build & configuration information
+      responses:
+        '200':
+          description: Status document fetched successfully
+      tags:
+        - Administrator
+        - Informatician
+        - Utility
+        - Development
+
+  '/static':
+    get:
+      summary: Retrieves static content - currently  `/static/swagger.yml`
+      description: |-
+        *NOTE:* this is an absolute path it is _not_ proceeded with api version.
+      responses:
+        '200':
+          description: Static document fetched successfully
+      tags:
+        - Administrator
+        - Informatician
+        - Utility
+        - Development
+
+
+schemes:
+  - http
+parameters:
+  File__id:
+    in: path
+    name: _id
+    required: true
+    description: 'unique id of the resource'
+    type: string
+    format: objectid
+  Program__id:
+    in: path
+    name: programId
+    required: true
+    description: ''
+    type: string
+    format: objectid
+  Project__id:
+    in: path
+    name: projectId
+    required: true
+    description: ''
+    type: string
+    format: objectid
+  program_name:
+    in: path
+    name: program_name
+    required: true
+    description: 'unique name of the program, assigned by admin'
+    type: string
+  project_code:
+    in: path
+    name: project_code
+    required: true
+    description: 'unique name of the project, assigned by informatician'
+    type: string
+  submission_id:
+    in: path
+    name: _id
+    required: true
+    description: 'unique id of the submission, assigned by system'
+    type: string
+  Authorization:
+    in: header
+    name: authorization
+    type: string
+    required: true
+    description: JSON Web Tokens are an open standard for representing claims securely between two parties.
+  filter:
+    in: query
+    name: filter
+    type: string
+    required: false
+    description: |+
+      Filter parameter passed to backend.  Note:  The [GDC Spec](https://gdc-docs.nci.nih.gov/API/Users_Guide/Search_and_Retrieval/#filters-specifying-the-query) is specific their graphql backend. We diverge from the GDC spec here and use a google search like [syntax](https://github.com/Intel-HSS/CCC_DMS/blob/api5/doc/query_syntax.md)
+  sort:
+    name: sort
+    in: query
+    description: |+
+      The sort query parameter sorts the results by a specific field, and with the sort direction specified using the :asc (ascending) or :desc (descending) prefix, e.g. sort=field:desc. [more](https://gdc-docs.nci.nih.gov/API/Users_Guide/Search_and_Retrieval/#sort)
+
+    required: false
+    type: string
+
+  fields:
+    name: fields
+    in: query
+    description: |+
+      This query parameter specifies which fields are to be included in the API response. [more](https://gdc-docs.nci.nih.gov/API/Users_Guide/Search_and_Retrieval/#fields)
+
+    required: false
+    type: string
+
+  size:
+    name: size
+    in: query
+    description: |+
+      The size query parameter specifies the maximum number of results to return. Default size is 10. If the number of query results is greater than size, only some of the results will be returned.
+
+    required: false
+    type: integer
+  from:
+    name: from
+    in: query
+    description: |+
+      The from query parameter specifies the first record to return out of the set of results. For example, if there are 20 cases returned from the cases endpoint, then setting from to 11 will return results 11 to 20. The from parameter can be used in conjunction with the size parameter to return a specific subset of results.
+
+    required: false
+    type: integer
+
+
+produces:
+  - application/json
+basePath: /v0
+tags:
+
+  - name: File
+    description: |-
+      `Entity` aka "Resource". "A set of related records (either file or api) identified by a url. Other attributes include mimetype, size, description, checksum (NCIt C42883)."  It is necessary to describe files `independently of project submission`.  For example, a `reference genome` resource is used across all projects.   This entry point allows Administrator and Informaticians to create files outside of the `Project` context.   Files created in this manner are also  returned in `Search`.
+
+  - name: Search
+    description: |-
+      `Operation`
+      The CCC Search provides users with web-based access to data from cancer genomics studies. Key features include:
+
+      * Open, granular access to information about all datasets available in the CCC
+      * Advanced search and visualization-assisted filtering of data files
+      * A resource centric view for browsing available harmonized focused on resources(files) and their associated meta data
+
+      The files endpoint `/v0/files` enables search and retrieval of information relating to files stored in the DMS, including file properties such as file_name, md5sum, data_format, and others.  Users can search using attributes of the file or any of its associated entitities. A standardized, pagable response returns variable content depending on the hits found.
+
+  - name: Submission
+    description: |-
+      `Operation`
+      The CCC will accept submissions of cancer genomic and clinical data from researchers around the world who wish to share their data broadly.
+      The Submission endpoint is a platform that allows researchers to submit and release data to CCC. The key features of the GDC Data Submission Portal are:
+        * Upload and Validate Data: Project data can be uploaded and registered with the CCC. The API will validate the data against the data model.
+        * Harmonization: While preserving the submitter's data model, key fields and attributes are standardized to enable cross project search and aggregation.  This responsibility is shared between the API and the ccc_client.
+          * Meta data relationships - biospecimen entitities are associcated with resources for searching and aggregations
+          * Vocabulary alignment - a small number of fields are cross referenced based on the GA4GH metadata schema.
+          * The data model is flexible and imposes very few technical limits on adjusting the entities and relationships. However there may be effects on quality control, reporting, accounting and user interface/experience.
+        * Quality Control: Submitted metadata relationships are checked for data integrity, the links between metadata.
+
+        The API accepts project metadata in JSON formats for the purpose
+        of creating entities in the Data Model. This includes clinical
+        and biospecimen metadata such as disease name and stage,
+        patient age, sample type, and certain details about the types of
+        data collected. Upon successful data submission this metadata is indexed
+        and becomes available for queries by data users via the /v0/files endpoint.
+        The user can submit several entity types all linked by user submitted ids. [files, slide, aliquot, analyte, portion, samples, cases, projects ]
+        See [here](https://gdc-docs.nci.nih.gov/API/Users_Guide/Submission/#submission) for more.
+
+        The goal of the CCC submittal process is to support active experiements and workflows.  The CCC submission process is an abbreviated workflow when compared to [others](https://gdc-docs.nci.nih.gov/Data_Submission_Portal/Users_Guide/Submission_Workflow/) in that the CCC is not geared for data publication and "release".
+
+  - name: Program
+    description: Administrative `Entity`. Program has many Projects. "A broad framework of goals to be achieved. (NCIt C52647)."  Created by Informatician during submission.
+
+  - name: Project
+    description: Administrative `Entity`. Belongs to Program, has many Cases. "Any specifically defined piece of work that is undertaken or attempted to meet a single requirement. (NCIt C47885)"
+
+  - name: Case
+    description:  Administrative `Entity`. Belongs to Project. "The collection of all data related to a specific subject in the  context of a specific project."
+
+  - name: Biospecimen
+    description: |-
+      `Entity category`. Biospecimen data refers to information associated with the physical sample taken from a participant and its processing down to the aliquot level for sequencing experiments. This data falls into several key entities `[slide, aliquot, analyte, portion, samples]`  forming the chain of meta data between resource(file) and case(individual)
+
+  - name: Informatician
+    description: |-
+      `Role`. Execute, test and roll out project specific solutions. More specifically, develops and manages pipelines (genomic, imaging,etc.) for their projects, including managing data.
+
+  - name: Researcher
+    description: |-
+      `Role`. CCC researchers will be able to integrate genetic and clinical data, such as cancer imaging and histological data, with information on the molecular profiles of tumors as well as treatment response. From this perspective, the CCC would become an important resource for generating potentially actionable information that ultimately contributes to scientific progress.
+
+  - name: Administrator
+    description: |-
+      `Role`. Effective provisioning, installation/configuration, operation, and maintenance of systems software and related infrastructure.
+
+  - name: Utility
+    description: |-
+      ` Operation Category`. Useful endpoints for general use.
+
+  - name: Development
+    description: |-
+      ` Operation Category`. Useful endpoints for development, will change frequently and may be deprecated.
+
+host: '192.168.99.100:8000'
+definitions:
+  File:
+    type: object
+    properties:
+      mimeType:
+        type: string
+      info:
+        type: object
+      description:
+        type: string
+      name:
+        type: string
+      format:
+        type: string
+      checksum:
+        type: string
+      created:
+        type: string
+      class:
+        type: string
+      gid:
+        type: string
+      location:
+        type: string
+      _id:
+        type: string
+        format: objectid
+      type:
+        type: string
+      id:
+        type: string
+      datasetID:
+        type: string
+      size:
+        type: integer
+    description: |-
+      Entity aka Resource. "A set of related records (either file or api) identified by a url. Other attributes include mimetype, size, description, checksum (NCIt C42883)."
+
+  Submission:
+    type: object
+    properties:
+      submitter_id:
+        type: string
+      id:
+        type: string
+      program_name:
+        type: string
+      _id:
+        type: string
+        format: objectid
+      type:
+        type: string
+      project_code:
+        type: string
+    description: |-
+
+          The API accepts project metadata in JSON formats for the purpose
+          of creating entities in the Data Model. This includes clinical
+          and biospecimen metadata such as disease name and stage,
+          patient age, sample type, and certain details about the types of
+          data collected. Upon successful data submission this metadata is indexed
+          and becomes available for queries by data users via the /v0/files endpoint.
+
+  Project:
+    required:
+      - code
+      - name
+    type: object
+    properties:
+      code:
+        type: string
+      _id:
+        type: string
+        format: objectid
+      id:
+        type: string
+      name:
+        type: string
+    description: Any specifically defined piece of work that is undertaken or attempted to meet a single requirement. (NCIt C47885)
+
+
+  Program:
+    required:
+      - code
+      - name
+    type: object
+    properties:
+      code:
+        type: string
+      _id:
+        type: string
+        format: objectid
+      id:
+        type: string
+      name:
+        type: string
+    description: A broad framework of goals to be achieved. (NCIt C52647)
+
+  SearchResponse:
+    type: object
+    properties:
+      data:
+        type: object
+        properties:
+          hits:
+            description: Array of objects.  Type of object returned depends on entities searched.
+            type: array
+            items:
+              type: object
+              properties:
+                id:
+                  type: string
+                type:
+                  type: string
+          pagination:
+            type: object
+            properties:
+              count:
+                type: integer
+              sort:
+                type: string
+              from:
+                type: integer
+              pages:
+                type: integer
+              total:
+                type: integer
+              page:
+                type: integer
+              size:
+                type: integer
+      warnings:
+        type: object
+        properties: {}
+    description: |-
+          The files Endpoint https://gdc-api.nci.nih.gov/files enables search and retrieval of information relating to files stored in the GDC, including file properties such as file_name, md5sum, data_format, and others.
+
+
+  Login:
+    required:
+      - user
+      - password
+    type: object
+    properties:
+      user:
+        type: string
+      password:
+        type: string
+    description: authenticate user
+
+swagger: '2.0'
+consumes:
+  - application/json

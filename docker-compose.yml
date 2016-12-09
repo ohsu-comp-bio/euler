@@ -35,3 +35,76 @@ services:
       ADMIN_ROLE_NAME: ${ADMIN_ROLE_NAME:-admin}
       OHSU_ADMIN_LDAP_CN: ${OHSU_ADMIN_LDAP_CN}
       OHSU_ADMIN_LDAP_PASSWORD: ${OHSU_ADMIN_LDAP_PASSWORD}
+
+
+  # proxy requests to dcc-server
+  api:
+    container_name: api
+    build:
+      context: services/api
+    volumes:
+      - "./services/api:/service"
+      - "./util:/util/"
+    ports:
+      - "${API_PORT}:${API_PORT}"
+    environment:
+      - API_PORT=${API_PORT}                  # the port the API should bind to
+      - API_HOST=${API_HOST}                  # the host the API should bind to
+      - ELASTIC_HOST=${ELASTIC_HOST}          # defaults to localhost
+      - ELASTIC_PORT=${ELASTIC_PORT}          # defaults to 9200
+      - MONGO_HOST=${MONGO_HOST}              # defaults to localhost
+      - MONGO_PORT=${MONGO_PORT}              # defaults to 27017
+      - MONGO_USERNAME=${MONGO_USERNAME}      # defaults to ''
+      - MONGO_PASSWORD=${MONGO_PASSWORD}      # defaults to ''
+      - MONGO_DBNAME=${MONGO_DBNAME}          # defaults to 'test'
+      - PROXY_TARGET=${PROXY_TARGET}          # 'https://dcc.icgc.org'
+      - OS_USERNAME=${ADMIN_USER_NAME}        # openstack connection
+      - OS_PASSWORD=${ADMIN_PASSWORD}
+      - OS_PROJECT_NAME=${ADMIN_PROJECT_NAME}
+      - OS_AUTH_URL=http://controller:35357/v3
+      - OS_PROJECT_DOMAIN_ID=${ADMIN_DOMAIN_ID}
+      - OS_USER_DOMAIN_NAME=${ADMIN_DOMAIN_NAME}
+      - OS_IDENTITY_API_VERSION=3
+      - AUTHENTICATOR_SECRET=${AUTHENTICATOR_SECRET}  # JWT
+
+
+    links:
+      - mongo
+      - elastic
+      - keystone:controller
+
+
+
+  # Mongo DB
+  mongo:
+    container_name: mongo
+    image: "mongo:latest"
+    volumes:
+      - "./util:/util/"
+    ports:
+      - "${MONGO_PORT}:${MONGO_PORT}"
+    environment:
+      - MONGO_DBNAME=${MONGO_DBNAME}          # defaults to 'test'
+
+  # Elastic Search
+  # note: on docker for mac, you may need to adjust the docker-machines' config
+  # if you get this error ....
+  # elastic    | ERROR: bootstrap checks failed
+  # elastic    | max virtual memory areas vm.max_map_count [65530] likely too low, increase to at least [262144]
+  # ... see this
+  # https://github.com/elastic/elasticsearch-docker/blob/master/README.md#osx-with-docker-toolbox
+  elastic:
+    container_name: elastic
+    build:
+      context: services/elastic/
+    volumes:
+      - "./util:/util/"
+    ports:
+      - "${ELASTIC_PORT}:${ELASTIC_PORT}"
+    command: >
+      elasticsearch
+        -Edefault.http.port=${ELASTIC_PORT}
+        -Edefault.network.host=0.0.0.0
+        -Edefault.transport.host=0.0.0.0
+        -Edefault.cluster.name=ccc-es
+        -Edefault.node.name=central

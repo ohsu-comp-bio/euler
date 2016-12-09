@@ -1,0 +1,17 @@
+# std python modules
+Flask==0.10.1
+Eve==0.6.4
+requests==2.11.1
+Flask-Cors==3.0.2
+PyJWT==1.4.2
+pytest==3.0.3
+pytest-flask==0.10.0
+pytest-catchlog==1.2.2
+pytest-cov==2.4.0
+pytest-flake8==0.8.1
+pydash==3.4.7
+simple-crypt==4.1.7
+# keystone
+python-openstackclient==3.2.0
+# ga4gh, bmeg and gdc schemas
+git+https://github.com/ohsu-computational-biology/bioschemas
