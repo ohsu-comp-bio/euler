@@ -70,14 +70,21 @@ os role add --project ccc --user ccc_user --user-domain testing  member
 # show membership
 os role assignment list  --name
 
-+--------+---------------+-------+---------------+--------+-----------+
-| Role   | User          | Group | Project       | Domain | Inherited |
-+--------+---------------+-------+---------------+--------+-----------+
-| admin  | admin@Default |       | admin@Default |        | False     |
-| member | walsbr@ohsu   |       | ccc@Default   |        | False     |
-| member | walsbr@ohsu   |       | baml@Default  |        | False     |
-+--------+---------------+-------+---------------+--------+-----------+
-
+os role assignment list  --name
++--------+-------------------+-------+-----------------+--------+-----------+
+| Role   | User              | Group | Project         | Domain | Inherited |
++--------+-------------------+-------+-----------------+--------+-----------+
+| admin  | admin@Default     |       | admin@Default   |        | False     |
+| member | <any ohsu>@ohsu   |       | ccc@Default     |        | False     |
+| member | <any ohsu>@ohsu   |       | baml@Default    |        | False     |
+| admin  | swift@Default     |       | service@Default |        | False     |
+| admin  | admin@Default     |       | service@Default |        | False     |
+| member | brca_user@testing |       | brca@Default    |        | False     |
+| member | baml_user@testing |       | baml@Default    |        | False     |
+| member | ccc_user@testing  |       | brca@Default    |        | False     |
+| member | ccc_user@testing  |       | baml@Default    |        | False     |
+| member | ccc_user@testing  |       | ccc@Default     |        | False     |
++--------+-------------------+-------+-----------------+--------+-----------+
 
 # authenticate (if using OHSU behind firewall)
 export OHSU="--os-username <any ohsu user>
