@@ -37,6 +37,7 @@ os  domain  list
 # create domains
 os  domain  create forumsys
 os  domain  create ohsu
+os  domain  create testing
 # Restart the OpenStack Identity service.....
 
 # re-login when it comes up
@@ -46,11 +47,26 @@ os  domain  list
 # now build a representative project structure
 os  project  create ccc
 os  project  create baml --parent ccc
+os  project  create brca --parent ccc
 os  role create member
 
 # add user
 os role add --project ccc --user <any ohsu user> --user-domain ohsu  member
 os role add --project baml --user <any ohsu user> --user-domain ohsu  member
+
+# create test users
+os  domain  create testing
+os user create --password password  --domain testing brca_user
+os user create --password password  --domain testing baml_user
+os user create --password password  --domain testing ccc_user
+os role add --project brca --user brca_user --user-domain testing  member
+os role add --project baml --user baml_user --user-domain testing  member
+os role add --project brca --user ccc_user --user-domain testing  member
+os role add --project baml --user ccc_user --user-domain testing  member
+os role add --project ccc --user ccc_user --user-domain testing  member
+
+
+
 # show membership
 os role assignment list  --name
 
