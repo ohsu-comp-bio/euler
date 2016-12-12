@@ -110,8 +110,6 @@ services:
         -Edefault.cluster.name=ccc-es
         -Edefault.node.name=central
 
-  # docker run -v /srv --name SWIFT_DATA busybox
-  # docker run rm -v /srv --name SWIFT_DATA busybox
   swift:
     container_name: swift
     build:
