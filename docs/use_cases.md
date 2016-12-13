@@ -28,7 +28,13 @@ All users within BigUniversity need to use their existing enterprise credentials
 Alice arrives at work and logs into his desktop with his corporate username/password, and sees an email that the private cloud is now available. She clicks the link and it takes her to a sign-on page. She enters her corporate username/password and it lets her in. After exploring the features, she is ready to start using the system.  She immediately starts to query for her desired cohort.
 
 ## User story: Workflow
-Alice decides to launch a workflow, using resources she found in the DMS. After a job completion later she logs onto the workflow vm, and associates workflow results back to the DMS.
+Alice decides to launch a workflow, using resources she found in the DMS. In the workflow, when resources are registered with the object store, if she wishes to associate them with metadata, she adds that parameter to the storage call.  e.g.
+```
+swift upload  container1  /tmp/FILE1  -H "content-type:text/plain" -H "X-Object-Meta-sampleId:SAMPLE1"
+```
+Metadata tags can include individual, sample, specimen, aliquot, analyte, slide, etc. depending on project's needs.
+
+If no meta tags are included, the file is associated with the project.   (A generic `system` project exists for system files).   
 
 ## User story: Adding users to the DMS instance for BigUniversity
 Jill is an administrator for the system at BigUniversity. She's been asked to bulk load a division of people into a proof of concept/prototype setup (Identity is being backed by DB). In doing so, she has a list of usernames that should all be added, to be broken up into groups of multiple projects by a later task.

@@ -6,7 +6,8 @@ Simple deployment of a "all in one" style OpenStack Swift server, uses Ubuntu pa
 The Swift implementation is tied to the Keystone sibling project for authentication and authorization.  All data is stored in a docker volume container.
 
 
-![image](https://cloud.githubusercontent.com/assets/47808/21116547/de3a630c-c06a-11e6-92ba-7922edbed2c6.png)
+![image](https://cloud.githubusercontent.com/assets/47808/21162958/fd6b0058-c144-11e6-8321-8172972634fc.png)
+
 
 ## usage
 
@@ -39,7 +40,7 @@ On swift server, defining containers, uploading files,etc.
 ```
 export OS_AUTH_URL="http://controller:35357/v3"
 export OS_IDENTITY_API_VERSION="3"
-export OS_PASSWORD=ADMIN_PASS
+export OS_PASSWORD=<.... swift's password ... >
 export OS_USERNAME="swift"
 export OS_USER_DOMAIN_ID="default"
 export OS_PROJECT_DOMAIN_ID="default"
@@ -83,6 +84,47 @@ root@0724c2d89fe6:/# openstack container  list
 | object         | tmp/FILE1                               |
 | properties     | Color='blue', Mtime='1481347551.599294' |
 +----------------+-----------------------------------------+
+
+# # see the file creation event via euler's API
+# curl -s  $EULER_API_URL  | jq '._items[1]'
+{
+  "account": {
+    "sysmeta": {
+      "project-domain-id": "default"
+    }
+    ...
+  },
+  "container": {
+    "status": 204,
+    "write_acl": null,
+    "bytes": 21298,
+    "object_count": 20,
+    "read_acl": null
+    ....
+  },
+  "object": {
+    "status": 200,
+    "transient_sysmeta": {},
+    "length": 1071,
+    "etag": "06caf3592592ca7d68938e99f764a072",
+    "meta": {
+      "color": "blue",
+      "mtime": "1481666972.571258"
+    },
+    "sysmeta": {},
+    "type": "text/plain"
+  },
+  "env": {
+    "REQUEST_METHOD": "PUT",
+    "keystone": {
+      "token_info": {...}
+    }
+}
+
+
+
+
+
 
 # # assign capabilities to other groups
 # swift post container1 --read-acl "0369f74274b1499eb9257994b8b67087:*" --write-acl "0369f74274b1499eb9257994b8b67087:*"
@@ -187,7 +229,7 @@ You can read more about WSGI [here](http://docs.openstack.org/developer/keystone
 
 ## reading
 
-
+http://docs.openstack.org/project-install-guide/object-storage/draft/controller-install-ubuntu.html
 https://github.com/openstack/kolla
 https://github.com/ccollicutt/docker-swift-onlyone
 http://docs.openstack.org/mitaka/install-guide-ubuntu/swift-controller-install.html
