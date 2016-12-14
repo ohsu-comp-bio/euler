@@ -38,7 +38,7 @@ services:
       OHSU_ADMIN_LDAP_PASSWORD: ${OHSU_ADMIN_LDAP_PASSWORD}
 
 
-  # proxy requests to dcc-server
+  # proxy requests to dcc-server, JWT token authentication, using keystone backend
   api:
     container_name: api
     build:
@@ -118,10 +118,11 @@ services:
       - "8080:8080"
     volumes_from:
       - swift_data
-    # volumes:
-    #   - ./db/swift:/srv
     links:
       - keystone:controller
+      - api
+    environment:
+      - EULER_API_URL=${EULER_API_URL}  
 
   swift_data:
     container_name: swift_data

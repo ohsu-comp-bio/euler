@@ -67,6 +67,11 @@ if [ ! -z "${SWIFT_USER_PASSWORD}" ]; then
 	grep "user_test" /etc/swift/proxy-server.conf
 fi
 
+# set the API endpoint, the euler plugin will post file events here
+sed -i -e "s/euler_api_url = .*/euler_api_url = ${EULER_API_URL}/g" /etc/swift/proxy-server.conf
+
+
+
 # Start supervisord
 echo "Starting supervisord..."
 /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf

@@ -59,8 +59,9 @@ file = {
     'datasource': {
         'source': 'file',
     },
-    'resource_methods': ['POST', 'DELETE']
+    'resource_methods': ['POST', 'DELETE', 'GET']
 }
+
 
 # TODO Remove after adding token to tests
 PUBLIC_METHODS = ['GET', 'POST', 'PATCH', 'DELETE']

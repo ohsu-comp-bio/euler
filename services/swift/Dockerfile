@@ -7,9 +7,6 @@ MAINTAINER walsbr "walsbr@ohsu.edu"
 ENV CLIENT_VERSION=3.2.0
 ENV SWIFT_VERSION=2.10.0
 
-# see http://docs.openstack.org/project-install-guide/object-storage/draft/controller-install-ubuntu.html
-# older doc http://docs.openstack.org/mitaka/install-guide-ubuntu/swift-controller-install.html
-
 
 # update catalog, install keystone dependencies, ldap dependencies,
 # dev dependencies & the clean up

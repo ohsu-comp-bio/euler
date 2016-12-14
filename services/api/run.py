@@ -34,7 +34,6 @@ def _configure_app():
 app = _configure_app()
 #  print useful information at startup
 app.logger.debug('Authenticator {}'.format(app.auth))
-app.logger.debug('URL map {}'.format(app.url_map))
 
 
 @app.route('/<path:url>', methods=['GET'])
@@ -83,6 +82,7 @@ def _remote_url():
     """
     return "{}{}".format(PROXY_TARGET, request.full_path)
 
+app.logger.debug('URL map {}'.format(app.url_map))
 
 # Entry point of app
 if __name__ == '__main__':  # pragma: no cover

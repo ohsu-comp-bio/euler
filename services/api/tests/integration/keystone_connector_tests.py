@@ -14,7 +14,7 @@ def test_should_have_env_defined():
     assert 'OS_PASSWORD' in os.environ
     assert 'OS_AUTH_URL' in os.environ
     assert 'OS_PROJECT_NAME' in os.environ
-    assert 'OS_USER_DOMAIN_ID' in os.environ
+    assert 'OS_USER_DOMAIN_NAME' in os.environ
     assert 'OS_PROJECT_DOMAIN_ID' in os.environ
 
 

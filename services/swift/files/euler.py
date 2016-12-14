@@ -4,11 +4,14 @@ from swift.proxy.controllers.base import get_container_info
 from swift.proxy.controllers.base import get_account_info, get_object_info
 from swift.common.swob import Request, Response
 import traceback
+import requests
+from json import dumps
 
 
 class Euler(object):
     """
-    Middleware that writes file create/update event to kafka->dcc->bmeg
+    Middleware that writes file create/update event to api/v0/files
+    for dispersal to ['dcc', 'bmeg', ... ]
     """
 
     def __init__(self, app, conf, logger=None):
@@ -18,6 +21,9 @@ class Euler(object):
             self.logger = logger
         else:
             self.logger = get_logger(conf, log_route='euler')
+
+        self.api_url = conf.get('api_url')
+        self.logger.debug("euler.api_url: {}".format(self.api_url))
 
     def __call__(self, env, start_response):
         """
@@ -39,22 +45,31 @@ class Euler(object):
             # harvest container, account and object info
             container_info = get_container_info(
                 env, self.app, swift_source='Euler')
-            self.logger.debug("env: {}".format(env))
-            self.logger.debug("container_info: {}".format(container_info))
-
             account_info = get_account_info(
                 env, self.app, swift_source='Euler')
-            self.logger.debug("account_info: {}".format(account_info))
-
             object_info = get_object_info(
                 env, self.app)
-            self.logger.debug("object_info: {}".format(object_info))
+            # post useful data to euler api service
+            from_env = ['REQUEST_METHOD', 'keystone.identity',
+                        'keystone.token_info']
+            to_api_env = {}
+            for key in from_env:
+                to_api_env[key] = env[key]
+            to_api = {'type': 'swift_event',
+                      'env': to_api_env,
+                      'container': container_info,
+                      'account': account_info,
+                      'object': object_info}
+            self.logger.debug("euler.to_api: {}".format(to_api))
+            r = requests.post(self.api_url,  json=to_api)
+            self.logger.debug("euler.api_response: {}".format(r))
+
         except:  # catch *all* exceptions
             tb = traceback.format_exc()
-            self.logger.debug("traceback: {}".format(tb))
+            self.logger.debug("euler.traceback: {}".format(tb))
 
         finally:
-            # unaltered upstream response
+            # return unaltered upstream response
             return response
 
 
