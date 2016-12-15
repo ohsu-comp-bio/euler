@@ -8,3 +8,4 @@ services:
     extra_hosts:
      - "mongo:${MONGO_HOST_IP}"
      - "elastic:${ELASTIC_HOST_IP}"
+     - "controller:${KEYSTONE_HOST_IP}"

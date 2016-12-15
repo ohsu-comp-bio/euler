@@ -76,12 +76,15 @@ Note: Euler uses docker-compose file [version 2.1](https://docs.docker.com/compo
 We use [docker compose extends](https://docs.docker.com/compose/extends/) in addition to .env to manage dev vs test. Additional overrides can be developed for different contexts... prod and exacloud vs sparkdmz.
 
 
+![image](https://cloud.githubusercontent.com/assets/47808/21245920/4ed93a86-c2da-11e6-9f55-27387ab04c0d.png)
+
+
 ## potentially useful aliases
 
 ```
-alias up="docker-compose -f docker-compose.yml -f docker-compose-development.yml up"
-alias stop="docker-compose -f docker-compose.yml -f docker-compose-development.yml stop"
-alias build="docker-compose -f docker-compose.yml -f docker-compose-development.yml build"
+alias up="docker-compose -f docker-compose.yml -f docker-compose-development.yml -f docker-compose-openstack.yml up"
+alias stop="docker-compose -f docker-compose.yml -f docker-compose-development.yml -f docker-compose-openstack.yml stop"
+alias build="docker-compose -f docker-compose.yml -f docker-compose-development.yml -f docker-compose-openstack.yml  build"
 
 execfunction() {
     docker exec -it $1 bash
