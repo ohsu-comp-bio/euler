@@ -1,24 +1,3 @@
-This PR contains:
-
-* an implementation of swift object store, implemented using the existing keystone authentication service
-
-* example user/project setups
-
-* an implementation of the a swift pipeline observer to harvest file additions and notify downstream systems (dcc & bmeg )
-
-
-A code review would be very helpful.
-
-@kellrott @ksonmez @mayfielg @k1643  @adamstruck @buchanae @prismofeverything: can you review and comment
-
-@AAMargolin @jacmarjorie :FYI
-
-
------
-
-
-
-
 # swift
 
 
