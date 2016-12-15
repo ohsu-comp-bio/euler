@@ -50,6 +50,15 @@ def get_root(url):
                     content_type=req.headers['content-type'])
 
 
+# let's find the rule that was just generated
+rule = app.url_map._rules[-1]
+# we create some comparison keys:
+# increase probability that the rule will be near or at the bottom
+bottom_compare_key = True, 100, [(2, 0)]
+# rig rule.match_compare_key() to return the spoofed compare_key
+rule.match_compare_key = lambda: bottom_compare_key
+
+
 @app.route('/v0/logout', methods=['POST'])
 def _development_logout():
     """stub manual logout"""

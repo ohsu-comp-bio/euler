@@ -136,9 +136,11 @@ def test_authenticate_with_openstack_header(client, app):
     request.headers['X-Auth-Token'] = profile['token']
     projects = app.auth.projects(request=request)
     user = app.auth.get_user(request=request)
+    token = app.auth.token(request=request)
     app.auth = old_auth
     assert len(projects) > 0
     assert user
+    assert token
 
 
 def test_projects_from_unauthorized_token(client, app):

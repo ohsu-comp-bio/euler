@@ -47,15 +47,22 @@ ALLOW_UNKNOWN = True
 Notes:
 * Essentially a URI
 * C(R)UD is routed to mongo collection 'file'
-* (R)Search is routed to flask route aggregated_resource (no 'GET')
 """
-file = {
+file_formal = {
     'description':
         """
         A set of related records (either written or electronic) kept together.
         (NCIt C42883).
         """,
     'schema': bioschemas.cerberus_schema('Resource'),
+    'datasource': {
+        'source': 'file',
+    },
+    'resource_methods': ['POST', 'DELETE', 'GET']
+}
+
+file = {
+    'schema': {},
     'datasource': {
         'source': 'file',
     },

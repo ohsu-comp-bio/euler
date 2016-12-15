@@ -62,7 +62,7 @@ class BearerAuth(TokenAuth):
             return id_dict
         # see if we have an openstack user
         header_token = request.headers.get('X-Auth-Token')
-        if header_token:
+        if header_token:  # pragma nocoverage
             token = header_token
             token_info, role_assignments = connector.validate_token(
                 token,
@@ -125,8 +125,8 @@ class BearerAuth(TokenAuth):
         :param resource: resource being requested.
         """
         auth = None
-        if hasattr(request.authorization, 'username'):
-            auth = request.authorization.username
+        # if hasattr(request.authorization, 'username'):
+        #     auth = request.authorization.username
 
         # Werkzeug parse_authorization does not handle
         # "Authorization: <token>" or
