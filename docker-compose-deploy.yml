@@ -1,0 +1,10 @@
+version: '2.1'
+services:
+
+  # for deployments where [mongo, elastic, ...] are not part of compose
+  # add mongo & elastic links to api
+  # see https://docs.docker.com/compose/compose-file/#/extrahosts
+  api:
+    extra_hosts:
+     - "mongo:${MONGO_HOST_IP}"
+     - "elastic:${ELASTIC_HOST_IP}"

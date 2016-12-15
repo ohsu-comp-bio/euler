@@ -67,8 +67,29 @@ AUTHENTICATOR_SECRET=...your long string...
 
 Then:
 
-* ```docker-compose up -d```
+* ```docker-compose -f docker-compose.yml -f docker-compose-development.yml up -d```
 * configure [keystone](services/keystone/README.md)
 * configure [swift](services/swift/README.md)
 
-Euler uses docker-compose file [version 2.1](https://docs.docker.com/compose/compose-file/#/version-21), which requires [docker engine 1.12](https://docs.docker.com/docker-for-mac/) or greater and [docker-compose 1.9](https://github.com/docker/compose/releases) or greater. These may need separate updates to ensure both requirements are met. See links for upgrading information. 
+Note: Euler uses docker-compose file [version 2.1](https://docs.docker.com/compose/compose-file/#/version-21), which requires [docker engine 1.12](https://docs.docker.com/docker-for-mac/) or greater and [docker-compose 1.9](https://github.com/docker/compose/releases) or greater. These may need separate updates to ensure both requirements are met. See links for upgrading information.
+
+We use [docker compose extends](https://docs.docker.com/compose/extends/) in addition to .env to manage dev vs test. Additional overrides can be developed for different contexts... prod and exacloud vs sparkdmz.
+
+
+## potentially useful aliases
+
+```
+alias up="docker-compose -f docker-compose.yml -f docker-compose-development.yml up"
+alias stop="docker-compose -f docker-compose.yml -f docker-compose-development.yml stop"
+alias build="docker-compose -f docker-compose.yml -f docker-compose-development.yml build"
+
+execfunction() {
+    docker exec -it $1 bash
+}
+alias exec=execfunction
+
+recreatefunction() {
+    stop $1 ; docker rm $1 ; docker rmi euler_$1 ; up -d $1
+}
+alias recreate=recreatefunction
+```
