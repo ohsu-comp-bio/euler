@@ -67,6 +67,7 @@ services:
       - OS_USER_DOMAIN_NAME=${ADMIN_DOMAIN_NAME}
       - OS_IDENTITY_API_VERSION=3
       - AUTHENTICATOR_SECRET=${AUTHENTICATOR_SECRET}  # JWT
+      - API_DEBUG=${API_DEBUG}
 
 
     links:
@@ -122,7 +123,7 @@ services:
       - keystone:controller
       - api
     environment:
-      - EULER_API_URL=${EULER_API_URL}  
+      - EULER_API_URL=${EULER_API_URL}
 
   swift_data:
     container_name: swift_data
