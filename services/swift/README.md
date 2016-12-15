@@ -1,3 +1,24 @@
+This PR contains:
+
+* an implementation of swift object store, implemented using the existing keystone authentication service
+
+* example user/project setups
+
+* an implementation of the a swift pipeline observer to harvest file additions and notify downstream systems (dcc & bmeg )
+
+
+A code review would be very helpful.
+
+@kellrott @ksonmez @mayfielg @k1643  @adamstruck @buchanae @prismofeverything: can you review and comment
+
+@AAMargolin @jacmarjorie :FYI
+
+
+-----
+
+
+
+
 # swift
 
 
@@ -5,14 +26,30 @@ Simple deployment of a "all in one" style OpenStack Swift server, uses Ubuntu pa
 
 The Swift implementation is tied to the Keystone sibling project for authentication and authorization.  All data is stored in a docker volume container.
 
+### capabilities
 
-![image](https://cloud.githubusercontent.com/assets/47808/21162958/fd6b0058-c144-11e6-8321-8172972634fc.png)
+![image](https://cloud.githubusercontent.com/assets/47808/21116547/de3a630c-c06a-11e6-92ba-7922edbed2c6.png)
+
+* As files are added to the object store by an authenticated user, they are published to a message queue where they can be consumed by different systems [dms, bmeg, other...]
+
+* When  an authenticated user queries using the dcc portal or a client tool, they results they see are based on the authorizations assigned to their identity as provided by the institutional ldap server
+
+### data flows
+
+![image](https://cloud.githubusercontent.com/assets/47808/21244620/5984d082-c2d3-11e6-8576-397a419409ec.png)
+
+
+* (0) - the projects' meta data and files are loaded into dcc (aka '[release](https://github.com/icgc-dcc/dcc-release)')
+* (1,2) - An authenticated user adds a file to the object store, and the[ euler plugin](https://github.com/ohsu-computational-biology/euler/blob/swift/services/swift/files/euler.py) picks up meta data about the container, object(file) and user account and posts it to [euler's api service](https://github.com/ohsu-computational-biology/euler/tree/swift/services/api) for processing.
+* (3) - The euler api server consumes the event and composes a[ Resource message](https://github.com/ohsu-computational-biology/bioschemas/blob/icgc/bioschemas/snapshot/proto/bmeg/core.proto) and publishes it to a kafka topic.   A kafka component picks up the message and uses existing calls to the dcc-server(which depends on es,mongo) to retrieve context data and creates a [file centric document ](https://github.com/ohsu-computational-biology/bioschemas/blob/icgc/bioschemas/snapshot/jsonschema/icgc-dcc/schema.json). `//todo`
+* (4) - An authenticated user, using the either the portal or a command line tool, queries for resources or metadata.   The euler api component filters and redacts those calls.  `//todo`
+* (5) - The euler api component relies on keystone for identity and authorization decisions.
 
 
 ## usage
 
 * Startup - nothing special, included in the docker-compose setup.
-* Defining users, projects, etc.   This is is covered in the main readme in the euler repo.
+* Defining users, projects, etc.   This is is covered in the main readme in the euler/keystone repo.
 
 
 ### swift server config setup
@@ -40,7 +77,7 @@ On swift server, defining containers, uploading files,etc.
 ```
 export OS_AUTH_URL="http://controller:35357/v3"
 export OS_IDENTITY_API_VERSION="3"
-export OS_PASSWORD=<.... swift's password ... >
+export OS_PASSWORD=ADMIN_PASS
 export OS_USERNAME="swift"
 export OS_USER_DOMAIN_ID="default"
 export OS_PROJECT_DOMAIN_ID="default"
@@ -63,9 +100,8 @@ root@0724c2d89fe6:/# openstack container  list
 
 # # create container and upload file
 # os container create container1
-export FILE_PATH=/tmp/FILE1
-ls -l > $FILE_PATH
-swift upload  container1  $FILE_PATH  -H "content-type:text/plain" -H "X-Object-Meta-sample:SAMPL-1234"
+# ls -l > /tmp/FILE1
+# swift upload  container1  /tmp/FILE1  -H "content-type:text/plain" -H "X-Object-Meta-color:blue"
 +------------+------------+----------------------------------+
 | object     | container  | etag                             |
 +------------+------------+----------------------------------+
@@ -85,50 +121,6 @@ swift upload  container1  $FILE_PATH  -H "content-type:text/plain" -H "X-Object-
 | object         | tmp/FILE1                               |
 | properties     | Color='blue', Mtime='1481347551.599294' |
 +----------------+-----------------------------------------+
-
-# # see the file creation event via euler's API
-# # Note this is now secured, so set header variable
-
-# eval $(os token issue -f shell)
-# curl -s  $EULER_API_URL -H "X-Auth-Token: $id"  | jq '._items'
-{
-  "account": {
-    "sysmeta": {
-      "project-domain-id": "default"
-    }
-    ...
-  },
-  "container": {
-    "status": 204,
-    "write_acl": null,
-    "bytes": 21298,
-    "object_count": 20,
-    "read_acl": null
-    ....
-  },
-  "object": {
-    "status": 200,
-    "transient_sysmeta": {},
-    "length": 1071,
-    "etag": "06caf3592592ca7d68938e99f764a072",
-    "meta": {
-      "color": "blue",
-      "mtime": "1481666972.571258"
-    },
-    "sysmeta": {},
-    "type": "text/plain"
-  },
-  "env": {
-    "REQUEST_METHOD": "PUT",
-    "keystone": {
-      "token_info": {...}
-    }
-}
-
-
-
-
-
 
 # # assign capabilities to other groups
 # swift post container1 --read-acl "0369f74274b1499eb9257994b8b67087:*" --write-acl "0369f74274b1499eb9257994b8b67087:*"
@@ -151,32 +143,6 @@ swift upload  container1  $FILE_PATH  -H "content-type:text/plain" -H "X-Object-
 
 # export OS_USERNAME=ccc_user
 # export OS_PROJECT_NAME=ccc
-
-# # get a token
-# os token issue  -f shell
-expires="2016-12-14 21:34:36+00:00"
-id="gAAAAABYUazcjZlY9mpKVlO4kdNERyLLEgqZiOh7ReuT0Doz3DsUKB7wQgzu5XjeCdqE1QjesdSdrgOWJ-ApF5x66mZ4i_8jalTE9k92w-M75eoG_TmtMMmOSJZcKzTybcQjsI7RIz-_eMeerxzTYIdwgfRsjOYd-2yjZzsnoaOGavAVqKpIF7w"
-project_id="0369f74274b1499eb9257994b8b67087"
-user_id="d8c01ba94ad64680a99f9785ff8a453f"
-
-# curl -g -i -X GET "http://swift:8080/v1/AUTH_$project_id?format=json"  -H "X-Auth-Token: $id"
-HTTP/1.1 200 OK
-Content-Length: 52
-X-Account-Object-Count: 0
-X-Account-Storage-Policy-Policy-0-Bytes-Used: 0
-X-Account-Storage-Policy-Policy-0-Container-Count: 1
-X-Timestamp: 1481377867.40041
-X-Account-Storage-Policy-Policy-0-Object-Count: 0
-X-Account-Bytes-Used: 0
-X-Account-Container-Count: 1
-Content-Type: application/json; charset=utf-8
-Accept-Ranges: bytes
-x-account-project-domain-id: default
-X-Trans-Id: tx4529d562451f44a281e2e-005851acf2
-Date: Wed, 14 Dec 2016 20:34:58 GMT
-
-[{"count": 0, "bytes": 0, "name": "baml_container"}]
-
 ```
 
 ## extension
@@ -259,7 +225,7 @@ You can read more about WSGI [here](http://docs.openstack.org/developer/keystone
 
 ## reading
 
-http://docs.openstack.org/project-install-guide/object-storage/draft/controller-install-ubuntu.html
+
 https://github.com/openstack/kolla
 https://github.com/ccollicutt/docker-swift-onlyone
 http://docs.openstack.org/mitaka/install-guide-ubuntu/swift-controller-install.html
