@@ -17,14 +17,13 @@ from keystoneauth1 import session
 def get_token_and_roles(username, user_domain_name, password):
     """ returns a tuple (token,role_assignments) """
     token, client = _get_token(
-                        username=username,
-                        user_domain_name=user_domain_name,
-                        password=password,
-                      )
+        username=username,
+        user_domain_name=user_domain_name,
+        password=password,
+    )
     assert token['user']['id']
     user_id = token['user']['id']
-    role_mgr = client.role_assignments
-    role_assignments = role_mgr.list(user=user_id, include_names=True)
+    role_assignments = get_role_assignments(client, user_id)
     # place email into token
     user = client.users.get(user_id)
     if hasattr(user, 'email'):   # pragma: no cover
@@ -34,22 +33,33 @@ def get_token_and_roles(username, user_domain_name, password):
     return token, role_assignments
 
 
-def validate_token(token):
+def get_role_assignments(client, user_id):
+    role_mgr = client.role_assignments
+    role_assignments = role_mgr.list(user=user_id, include_names=True)
+    return role_assignments
+
+
+def validate_token(token, fetch_roles=False):
     """ returns access information. throws exception if invalid token """
     client = _authenticated_session()
     if not isinstance(token, basestring):
-        token['auth_token']
-    return client.tokens.validate(token)
+        token = token['auth_token']
+    token_info = client.tokens.validate(token)
+    if not fetch_roles:
+        return token_info
+    user_id = token_info['user']['id']
+    role_assignments = get_role_assignments(client, user_id)
+    return token_info, role_assignments
 
 
 def _get_token(username, user_domain_name, password):
     client = _authenticated_session()
     token = client.get_raw_token_from_identity_service(
-                   username=username,
-                   user_domain_name=user_domain_name,
-                   auth_url=os.environ.get('OS_AUTH_URL'),
-                   password=password
-                   )
+        username=username,
+        user_domain_name=user_domain_name,
+        auth_url=os.environ.get('OS_AUTH_URL'),
+        password=password
+    )
     return token, client
 
 

@@ -64,9 +64,9 @@ def _development_login():
     credentials = request.get_json(silent=True)
     try:
         id_token = app.auth.authenticate_user(
-                    user_domain_name=credentials['domain'],
-                    username=credentials['user'],
-                    password=credentials['password'])
+            user_domain_name=credentials['domain'],
+            username=credentials['user'],
+            password=credentials['password'])
         return jsonify({'id_token': id_token})
     except Exception as e:
         app.logger.debug(e)
@@ -82,7 +82,9 @@ def _remote_url():
     """
     return "{}{}".format(PROXY_TARGET, request.full_path)
 
+
 app.logger.debug('URL map {}'.format(app.url_map))
+
 
 # Entry point of app
 if __name__ == '__main__':  # pragma: no cover

@@ -48,6 +48,7 @@ def test_logout(client):
     should respond with ok and user
     """
     r = client.post('/v0/logout')
+    assert r
 
 
 def _development_login(client, app):
@@ -71,8 +72,10 @@ def test_project_lookup(client, app):
     auth = BearerAuth()
     token = {u'mail': u'None', u'token': u'foo', u'domain_name': u'Default',
              u'roles': [
-              {u'scope': {u'project': u'admin', u'domain': u'Default'}, u'role': u'admin'},  # NOQA
-              {u'scope': {u'project': u'user', u'domain': u'Default'}, u'role': u'member'},  # NOQA
+              {u'scope': {u'project': u'admin', u'domain': u'Default'},
+                u'role': u'admin'},  # NOQA
+              {u'scope': {u'project': u'user', u'domain': u'Default'},
+                u'role': u'member'},  # NOQA
               ], u'name': u'admin'}
     assert len(auth._find_projects(token)) == 2
 
@@ -114,6 +117,23 @@ def test_projects_from_token(client, app):
     request = {'headers': []}
     request = MockRequest()
     request.headers['authorization'] = 'Bearer {}'.format(id_token)
+    projects = app.auth.projects(request=request)
+    user = app.auth.get_user(request=request)
+    app.auth = old_auth
+    assert len(projects) > 0
+    assert user
+
+
+def test_authenticate_with_openstack_header(client, app):
+    # save current auth, and ensure test_authenticator used for this test
+    old_auth = app.auth
+    app.auth = BearerAuth()
+    id_token = _development_login(client, app)
+    profile = app.auth.parse_token(id_token)
+    assert profile['token']
+    request = {'headers': []}
+    request = MockRequest()
+    request.headers['X-Auth-Token'] = profile['token']
     projects = app.auth.projects(request=request)
     user = app.auth.get_user(request=request)
     app.auth = old_auth

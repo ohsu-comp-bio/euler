@@ -64,8 +64,8 @@ file = {
 
 
 # TODO Remove after adding token to tests
-PUBLIC_METHODS = ['GET', 'POST', 'PATCH', 'DELETE']
-PUBLIC_ITEM_METHODS = ['GET', 'POST', 'PATCH', 'DELETE']
+# PUBLIC_METHODS = ['GET', 'POST', 'PATCH', 'DELETE']
+# PUBLIC_ITEM_METHODS = ['GET', 'POST', 'PATCH', 'DELETE']
 
 #
 SCHEMA_ENDPOINT = 'schemas'
