@@ -63,8 +63,9 @@ root@0724c2d89fe6:/# openstack container  list
 
 # # create container and upload file
 # os container create container1
-# ls -l > /tmp/FILE1
-# swift upload  container1  /tmp/FILE1  -H "content-type:text/plain" -H "X-Object-Meta-color:blue"
+export FILE_PATH=/tmp/FILE1
+ls -l > $FILE_PATH
+swift upload  container1  $FILE_PATH  -H "content-type:text/plain" -H "X-Object-Meta-sample:SAMPL-1234"
 +------------+------------+----------------------------------+
 | object     | container  | etag                             |
 +------------+------------+----------------------------------+
@@ -86,7 +87,10 @@ root@0724c2d89fe6:/# openstack container  list
 +----------------+-----------------------------------------+
 
 # # see the file creation event via euler's API
-# curl -s  $EULER_API_URL  | jq '._items[1]'
+# # Note this is now secured, so set header variable
+
+# eval $(os token issue -f shell)
+# curl -s  $EULER_API_URL -H "X-Auth-Token: $id"  | jq '._items'
 {
   "account": {
     "sysmeta": {
@@ -147,6 +151,32 @@ root@0724c2d89fe6:/# openstack container  list
 
 # export OS_USERNAME=ccc_user
 # export OS_PROJECT_NAME=ccc
+
+# # get a token
+# os token issue  -f shell
+expires="2016-12-14 21:34:36+00:00"
+id="gAAAAABYUazcjZlY9mpKVlO4kdNERyLLEgqZiOh7ReuT0Doz3DsUKB7wQgzu5XjeCdqE1QjesdSdrgOWJ-ApF5x66mZ4i_8jalTE9k92w-M75eoG_TmtMMmOSJZcKzTybcQjsI7RIz-_eMeerxzTYIdwgfRsjOYd-2yjZzsnoaOGavAVqKpIF7w"
+project_id="0369f74274b1499eb9257994b8b67087"
+user_id="d8c01ba94ad64680a99f9785ff8a453f"
+
+# curl -g -i -X GET "http://swift:8080/v1/AUTH_$project_id?format=json"  -H "X-Auth-Token: $id"
+HTTP/1.1 200 OK
+Content-Length: 52
+X-Account-Object-Count: 0
+X-Account-Storage-Policy-Policy-0-Bytes-Used: 0
+X-Account-Storage-Policy-Policy-0-Container-Count: 1
+X-Timestamp: 1481377867.40041
+X-Account-Storage-Policy-Policy-0-Object-Count: 0
+X-Account-Bytes-Used: 0
+X-Account-Container-Count: 1
+Content-Type: application/json; charset=utf-8
+Accept-Ranges: bytes
+x-account-project-domain-id: default
+X-Trans-Id: tx4529d562451f44a281e2e-005851acf2
+Date: Wed, 14 Dec 2016 20:34:58 GMT
+
+[{"count": 0, "bytes": 0, "name": "baml_container"}]
+
 ```
 
 ## extension
