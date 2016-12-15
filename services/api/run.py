@@ -10,7 +10,7 @@ from flask import request, jsonify, Response
 from flask_cors import CORS
 from flask import stream_with_context
 import requests
-
+from flask import redirect, url_for, abort, render_template, flash
 # our utilities
 from keystone_authenticator import BearerAuth
 import eve_util
@@ -27,6 +27,10 @@ def _configure_app():
     CORS(app)
     # after commit, publish
     app.on_inserted += eve_util.on_inserted
+    app.template_folder = os.path.join(os.path.dirname(
+                                       os.path.abspath(__file__)),
+                                       'templates')
+    app._static_folder = os.path.abspath("static/")
     return app
 
 
@@ -36,7 +40,7 @@ app = _configure_app()
 app.logger.debug('Authenticator {}'.format(app.auth))
 
 
-@app.route('/<path:url>', methods=['GET'])
+@app.route('/api/<path:url>', methods=['GET'])
 def get_root(url):
     """
     Catch-All URL GET: Stream Proxy with Requests
@@ -68,8 +72,8 @@ def _development_logout():
 
 
 @app.route('/v0/login', methods=['POST'])
-def _development_login():
-    """stub manual login"""
+def _api_login():
+    """login via json"""
     credentials = request.get_json(silent=True)
     try:
         id_token = app.auth.authenticate_user(
@@ -83,7 +87,54 @@ def _development_login():
                         401, {'message': 'Invalid domain/user/password'})
 
 
+@app.route('/login', methods=['POST', 'GET'])
+def html_login():
+    """login via form"""
+    if request.method == 'GET':
+        redirect_url = request.args.get('redirect')
+        app.logger.debug('html_login get redirect_url {}'.format(
+            redirect_url))
+        redirect_parm = ''
+        if redirect_url:
+            redirect_parm = '?redirect={}'.format(redirect_url)
+        return render_template('login.html',
+                               redirect_parm=redirect_parm)
+    app.logger.debug('html_login post {} {} {}'.format(
+        request.form['domain'],
+        request.form['username'],
+        request.form['password']))
+    id_token = None
+    try:
+        id_token = app.auth.authenticate_user(
+            user_domain_name=request.form['domain'],
+            username=request.form['username'],
+            password=request.form['password'])
+        app.logger.debug('html_login post id_token {}'.format(
+            id_token))
+    except Exception as e:
+        app.logger.exception(e)
+    if not id_token:
+        return render_template('login.html',
+                               domain=request.form['domain'],
+                               username=request.form['username'],
+                               password=request.form['password'],
+                               redirect_parm='',
+                               error='Invalid domain/user/password'), 401
+    redirect_url = request.args.get('redirect')
+    if redirect_url:
+        app.logger.debug('html_login post redirect_url {}'.format(
+            redirect_url))
+        return redirect(redirect_url + '?token={}'.format(id_token))
+    return render_template('login.html',
+                           domain=request.form['domain'],
+                           username=request.form['username'],
+                           password=request.form['password'],
+                           token=id_token,
+                           redirect_parm=''
+                           ), 201
+
 # Private util functions
+
 
 def _remote_url():
     """
@@ -98,7 +149,7 @@ app.logger.debug('URL map {}'.format(app.url_map))
 # Entry point of app
 if __name__ == '__main__':  # pragma: no cover
     # eve doesn't support standard "flask run", so set props here
-    debug = 'PROXY_DEBUG' in os.environ  # TODO does eve override?
+    debug = 'API_DEBUG' in os.environ  # TODO does eve override?
     api_port = int(os.environ.get('API_PORT', '5000'))
     api_host = os.environ.get('API_TARGET', '0.0.0.0')
     app.run(debug=debug, port=api_port, host=api_host)
