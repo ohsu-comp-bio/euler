@@ -70,3 +70,5 @@ Then:
 * ```docker-compose up -d```
 * configure [keystone](services/keystone/README.md)
 * configure [swift](services/swift/README.md)
+
+Euler uses docker-compose file [version 2.1](https://docs.docker.com/compose/compose-file/#/version-21), which requires [docker engine 1.12](https://docs.docker.com/docker-for-mac/) or greater and [docker-compose 1.9](https://github.com/docker/compose/releases) or greater. These may need separate updates to ensure both requirements are met. See links for upgrading information. 
