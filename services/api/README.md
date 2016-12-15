@@ -11,7 +11,7 @@
   * `/*` any other request is passed to DCC
 
 
-  ![image](https://cloud.githubusercontent.com/assets/47808/21032712/179a7866-bd60-11e6-935d-a943a65e50d2.png)
+  ![image](https://cloud.githubusercontent.com/assets/47808/21246256/6a747d1c-c2dc-11e6-8f80-d9304d8e0925.png)
 
 
 
