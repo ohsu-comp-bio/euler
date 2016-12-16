@@ -1,37 +1,34 @@
+################
 version: '2.1'
 services:
-  # TODO test uses internal sqlite, prod should use mariadb
-  # mysql_db:
-  #   image: mysql:5.7
-  #   # volumes:
-  #   #   - "./.data/db:/var/lib/mysql"
-  #   restart: always
-  #   environment:
-  #     MYSQL_ROOT_PASSWORD: something_secret
 
-  keystone:
-    # depends_on:
-    #   - mysql_db
+  # proxy requests to dcc-server, JWT token authentication, using keystone backend
+  api:
+    container_name: api
     build:
-      context: services/keystone
-    # links:
-    #   - mysql_db
-    ports:
-      - "35357:35357"
-      - "5000:5000"
-    restart: always
+      context: services/api
     volumes:
-      - "./.db:/db"
-    hostname: controller
+      - "./services/api:/service"
+      - "./util:/util/"
+    ports:
+      - "${API_PORT}:${API_PORT}"
     environment:
-      # coordinate with .env & services/keystone/bootstrap
-      ADMIN_TOKEN: ${ADMIN_TOKEN}
-      ADMIN_PROJECT_NAME: ${ADMIN_PROJECT_NAME:-admin}
-      ADMIN_USER_NAME: ${ADMIN_USER_NAME:-admin}
-      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
-      ADMIN_DOMAIN_NAME: ${ADMIN_DOMAIN_NAME:-default}
-      ADMIN_EMAIL: ${ADMIN_EMAIL:-${ADMIN_USER_NAME}@example.com}
-      ADMIN_REGION_ID: ${ADMIN_REGION_ID}
-      ADMIN_ROLE_NAME: ${ADMIN_ROLE_NAME:-admin}
-      OHSU_ADMIN_LDAP_CN: ${OHSU_ADMIN_LDAP_CN}
-      OHSU_ADMIN_LDAP_PASSWORD: ${OHSU_ADMIN_LDAP_PASSWORD}
+      - API_PORT=${API_PORT}                  # the port the API should bind to
+      - API_HOST=${API_HOST}                  # the host the API should bind to
+      - ELASTIC_HOST=${ELASTIC_HOST}          # defaults to localhost
+      - ELASTIC_PORT=${ELASTIC_PORT}          # defaults to 9200
+      - MONGO_HOST=${MONGO_HOST}              # defaults to localhost
+      - MONGO_PORT=${MONGO_PORT}              # defaults to 27017
+      - MONGO_USERNAME=${MONGO_USERNAME}      # defaults to ''
+      - MONGO_PASSWORD=${MONGO_PASSWORD}      # defaults to ''
+      - MONGO_DBNAME=${MONGO_DBNAME}          # defaults to 'test'
+      - PROXY_TARGET=${PROXY_TARGET}          # 'https://dcc.icgc.org'
+      - OS_USERNAME=${ADMIN_USER_NAME}        # openstack connection
+      - OS_PASSWORD=${ADMIN_PASSWORD}
+      - OS_PROJECT_NAME=${ADMIN_PROJECT_NAME}
+      - OS_AUTH_URL=http://controller:35357/v3
+      - OS_PROJECT_DOMAIN_ID=${ADMIN_DOMAIN_ID}
+      - OS_USER_DOMAIN_NAME=${ADMIN_DOMAIN_NAME}
+      - OS_IDENTITY_API_VERSION=3
+      - AUTHENTICATOR_SECRET=${AUTHENTICATOR_SECRET}  # JWT
+      - API_DEBUG=${API_DEBUG}

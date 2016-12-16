@@ -1,169 +1,101 @@
-# Euler: Authentication (authN) and high-level Authorization (authZ).
+# euler: authorization, object storage & search
 
 Euler was a Swiss mathematician, physicist, astronomer, logician and engineer who made important and influential discoveries in many branches of mathematics like infinitesimal calculus and graph theory while also making pioneering contributions to several branches such as topology and analytic number theory.  [wikipedia](https://en.wikipedia.org/wiki/Leonhard_Euler)
 
-## Short Description
+## short description
 
-Euler illustrates how the Keystone OpenStack project that provides Identity, Token, Catalog and Policy services for use specifically by the OHSU Search, BMEG and DIRAC. This project aims to deploy Keystone service  as a proof of concept using Docker and can be upgraded easily.
+For research projects that need to authenticate with their enterprise ldap, interact with other institutions in a federated manner to manage active and published projects by providing file and search capabilities, the euler project illustrates how to use off-the-shelf components.  Unlike the other approaches, which use a high percentage of custom code, the euler project accomplishes the same goals leveraging mature open source components.
 
-[Representative use cases](docs/use_cases.md) to drive discussion of distributed multi-tenant authorization needed for multi-institution pan-cancer research.
+## stories
+[Representative use cases](docs/use_cases.md) to drive discussion of distributed multi-tenant authorization needed for inter-institution pan-cancer research.
 
-![image](https://cloud.githubusercontent.com/assets/47808/20950267/9674d14c-bbd3-11e6-9791-55966149880e.png)
+![image](https://cloud.githubusercontent.com/assets/47808/21162958/fd6b0058-c144-11e6-8321-8172972634fc.png)
 
+## component description
 
-## Quick Start Using Docker Compose
+`Authorization` Euler illustrates how the Keystone OpenStack project that provides Identity, Token, Catalog and Policy services for use specifically by the OHSU Search, BMEG and DIRAC. This project aims to deploy Keystone service  as a proof of concept using Docker and can be upgraded easily. Specifically, we use keystone to integrate the institution's `ldap service` and `all roles and project memberships` are maintained in keystone's datastore. See the [keystone service](services/keystone/README.md) for more information on authentication and authorization.
 
-Simply run:
+`Object Storage` Euler illustrates how the Swift OpenStack project provides distributed, eventually consistent object/blob store.  Specifically, we use keystone to authorize access to Swift.  A `plugin` is used to monitor file storage and associate files with metadata in search.  By passively monitoring the storage pipeline, the workflow author requires no additional tools to register files. See the [swift service](services/swift/README.md) for more on file services.
 
-```docker-compose up -d```
-
-## How to use this image
-
-It may takes seconds to do some initial work, you can use `docker logs` to detect the progress. Once the Openstack Keystone Service is started, you can verify operation of the Identity service as follows:
-
-```
-$ docker-compose build keystone
-$ docker-compose up -d
-$ docker exec -it euler_keystone_1 bash
-
-# in docker container
-
-# setup alias and env
-alias os=openstack
-source ~/openrc
-os  domain  list
-# create domains
-os  domain  create forumsys
-os  domain  create ohsu
-# Restart the OpenStack Identity service.....
-
-# re-login when it comes up
-os  domain  list
-# log should display forumsys & ohsu
-
-# now build a representative project structure
-os  project  create ccc
-os  project  create baml --parent ccc
-os  role create member
-
-# add user
-os role add --project ccc --user <any ohsu user> --user-domain ohsu  member
-os role add --project baml --user <any ohsu user> --user-domain ohsu  member
-# show membership
-os role assignment list  --name
-
-+--------+---------------+-------+---------------+--------+-----------+
-| Role   | User          | Group | Project       | Domain | Inherited |
-+--------+---------------+-------+---------------+--------+-----------+
-| admin  | admin@Default |       | admin@Default |        | False     |
-| member | walsbr@ohsu   |       | ccc@Default   |        | False     |
-| member | walsbr@ohsu   |       | baml@Default  |        | False     |
-+--------+---------------+-------+---------------+--------+-----------+
+`Search` OICR's dcc portal is used as the search portal and engine.  Euler provides login and authorization services.  The swift plugin enhances the dcc portal by providing a `lightweight "add a file"` functionality which was missing from the dcc portal.  This allows the dcc portal to be used for active projects in addition to publishing finished projects. See the [api service](services/api/README.md) for more on api services.
 
 
-# authenticate (if using OHSU behind firewall)
-export OHSU="--os-username <any ohsu user>
---os-auth-url http://controller:35357/v3
---os-user-domain-id <ohsu domain id from domain list>
---os-identity-api-version 3
---os-password <any ohsu password user>"
 
-# these should work
-os token issue  $OHSU --os-project-name ccc
-os token issue  $OHSU --os-project-name baml
+## quick start
 
-+------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| Field      | Value                                                                                                                                                                                                      |
-+------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| expires    | 2016-12-07 02:22:39+00:00                                                                                                                                                                                  |
-| id         | gAAAAABYR2RfgW1wsOffKsaeok43wbP7HIKewpJaqcmxWsMDryxLlryA2Glo7OQ_ha6vM2KhSzjeQkTi6Ou3z6Erpey_KiSmHpnmr7Z1oi1aByXdJp4f7FURHvDR5oZKg-                                                                         |
-|            | 5JQXU_EQesT8R_xsR3wOVtJgjQcVmSp_yXdz5IgzQjj8h8H2uGLd1AJiFX2lxIEI2mUpUnRSSY6jy8TEL_ixDuNRejgHM2Zui0Bmh78dyJVjM6CK7tkKY                                                                                      |
-| project_id | 2363da9faceb46b3b54e332966e39f67                                                                                                                                                                           |
-| user_id    | ba9096ee5e956e35452227fe6a4f36f994ec34495030763706cdf530f870949e                                                                                                                                           |
-+------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-
-# this should fail
-os token issue  $OHSU --os-project-name admin
-
-# authenticate (if using public ldap server forumsys outside firewall)
-export FORUMSYS="--os-username tesla
---os-auth-url http://controller:35357/v3  
---os-user-domain-id <forumsys domain id from domain list>
---os-identity-api-version 3     
---os-password password"
-
-
-os role add --project ccc --user tesla --user-domain forumsys  member
-os role add --project baml --user tesla  --user-domain forumsys  member
-
-os token issue  $FORUMSYS --os-project-name baml
-+------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| Field      | Value                                                                                                                                                                                        |
-+------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| expires    | 2016-12-07 05:00:24+00:00                                                                                                                                                                    |
-| id         | gAAAAABYR4lYzHAf8oGY2MimaeJXy2I0tcvsfgNrrmJW6k4AJs2ZcPO92so7lVHXitOs_Zn36my0cOFkBAmcAF-4d8JdJY61xfuDcthETYVVN9I_SUzmtOPtMjnoIjkR1tgYZRorY7b9q7I6DSALpZ51MQwox7EHZ_TcCBdlBJZZKv9JC-           |
-|            | FUVbfTLzpN_O6jukhPdcWhI_TBw-tGoV5nd308kyXoMr3qwrSMBR20kX81zB6BbamjM6E                                                                                                                        |
-| project_id | 0369f74274b1499eb9257994b8b67087                                                                                                                                                             |
-| user_id    | 0b42e922b1712df2d994b91eab805aacfdaf4aedc4b8e609284c7f2dc021129b                                                                                                                             |
-+------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-
-
-```
-
-## Environment Variables
-
-Before you create a Keystone Service, you can adjust the additional configuration of the Openstack Keystone Service by passing one or more environment variables in .env or on the docker run command line.
+* clone this repository
+* create an .env file to hold configuration variables
 
 ```
 # .env file
-# configuration, read by docker compose, passed to services/keystone/bootstrap.sh
-ADMIN_TOKEN=....
-ADMIN_PROJECT_NAME=....
-ADMIN_USER_NAME=....
-ADMIN_DOMAIN_NAME=....
-ADMIN_PASSWORD=....
-ADMIN_EMAIL=....
-ADMIN_REGION_ID=....
-ADMIN_ROLE_NAME=....
-OHSU_ADMIN_LDAP_CN=....
+
+# keystone:
+ADMIN_TOKEN=... a unique string ...
+ADMIN_PROJECT_NAME=admin
+ADMIN_USER_NAME=admin
+ADMIN_DOMAIN_NAME=Default
+ADMIN_DOMAIN_ID=default
+ADMIN_PASSWORD=... a unique string ...
+ADMIN_EMAIL=... a unique email ...
+ADMIN_REGION_ID=ohsu
+ADMIN_ROLE_NAME=admin
+OHSU_ADMIN_LDAP_CN=... ldap admin CN ...
 # escape special characters
-OHSU_ADMIN_LDAP_PASSWORD=....
+OHSU_ADMIN_LDAP_PASSWORD=... ldap admin pass ...
+
+
+# swift plugin
+EULER_API_URL=http://api:8000/v0/files
+
+# api:
+PROXY_TARGET=https://dcc.icgc.org
+ELASTIC_HOST=elastic
+ELASTIC_PORT=9200
+API_PORT=8000
+API_DEBUG=1
+API_HOST=0.0.0.0
+API_URL=http://api:8000
+MONGO_HOST=mongo
+MONGO_PORT=27017
+MONGO_DBNAME=test
+MONGO_USERNAME=
+MONGO_PASSWORD=
+AUTHENTICATOR_SECRET=...your long string...
+
+
 ```
 
-## Testing
+Then:
 
-Test bootstrap setup
-`py.test tests/integration/test_bootstrap.py `
-
-## TODO
-
-### web app
-
-The webapp (dcc portal) needs to integrate to keystone using either JWT or OAUTH
-
-![image](https://cloud.githubusercontent.com/assets/47808/20950887/4c65e83a-bbd7-11e6-8771-ffd9a95844c9.png)
+* ```docker-compose -f docker-compose.yml -f docker-compose-development.yml -f docker-compose-openstack.yml up```
+* configure [keystone](services/keystone/README.md)
+* configure [swift](services/swift/README.md)
 
 
-### mysql
+Note: Euler uses docker-compose file [version 2.1](https://docs.docker.com/compose/compose-file/#/version-21), which requires [docker engine 1.12](https://docs.docker.com/docker-for-mac/) or greater and [docker-compose 1.9](https://github.com/docker/compose/releases) or greater. These may need separate updates to ensure both requirements are met. See links for upgrading information.
 
-Openstack Keystone Service uses an SQL database (default sqlite) to store data. The official documentation recommends use MariaDB or MySQL.
-
-The compose file needs to be adjusted to use mysql
-The following environment variables should be change according to your practice.
-
-* `-e MYSQL_ROOT_PASSWORD=...`: Defaults to the value of the `MYSQL\_ROOT\_PASSWORD` environment variable from the linked mysql container.
-* `-e MYSQL_HOST=...`: If you use an external database, specify the address of the database. Defautls to "mysql".
-
-### Federation
-
-In order to integrate to remote providers (google or other keystone instances) the keystone app will need to run under apache.
-
-![image](https://cloud.githubusercontent.com/assets/47808/20950402/4ff71666-bbd4-11e6-8719-b8614050c71d.png)
+We use [docker compose extends](https://docs.docker.com/compose/extends/) in addition to .env to manage dev vs test. Additional overrides can be developed for different contexts... prod and exacloud vs sparkdmz.
 
 
+![image](https://cloud.githubusercontent.com/assets/47808/21247766/e8117482-c2e6-11e6-9cd5-febf88baed47.png)
 
-## Utility
+* For qa,staging and production environments, the `docker-compose-deploy.yml` would be used to configure heavyweight services outside of  docker-compose.  Use it insead of docker-compose-*.yml.
+
+
+## potentially useful aliases
 
 ```
-alias recreate='docker-compose stop keystone ;  docker-compose rm keystone ; docker rmi euler_keystone ; docker-compose build keystone ;'
+alias up="docker-compose -f docker-compose.yml -f docker-compose-development.yml -f docker-compose-openstack.yml up"
+alias stop="docker-compose -f docker-compose.yml -f docker-compose-development.yml -f docker-compose-openstack.yml stop"
+alias build="docker-compose -f docker-compose.yml -f docker-compose-development.yml -f docker-compose-openstack.yml  build"
+
+execfunction() {
+    docker exec -it $1 bash
+}
+alias exec=execfunction
+
+recreatefunction() {
+    stop $1 ; docker rm $1 ; docker rmi euler_$1 ; up -d $1
+}
+alias recreate=recreatefunction
 ```
