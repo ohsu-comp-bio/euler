@@ -67,16 +67,19 @@ AUTHENTICATOR_SECRET=...your long string...
 
 Then:
 
-* ```docker-compose -f docker-compose.yml -f docker-compose-development.yml up -d```
+* ```docker-compose -f docker-compose.yml -f docker-compose-development.yml -f docker-compose-openstack.yml up```
 * configure [keystone](services/keystone/README.md)
 * configure [swift](services/swift/README.md)
+
 
 Note: Euler uses docker-compose file [version 2.1](https://docs.docker.com/compose/compose-file/#/version-21), which requires [docker engine 1.12](https://docs.docker.com/docker-for-mac/) or greater and [docker-compose 1.9](https://github.com/docker/compose/releases) or greater. These may need separate updates to ensure both requirements are met. See links for upgrading information.
 
 We use [docker compose extends](https://docs.docker.com/compose/extends/) in addition to .env to manage dev vs test. Additional overrides can be developed for different contexts... prod and exacloud vs sparkdmz.
 
 
-![image](https://cloud.githubusercontent.com/assets/47808/21245920/4ed93a86-c2da-11e6-9f55-27387ab04c0d.png)
+![image](https://cloud.githubusercontent.com/assets/47808/21247766/e8117482-c2e6-11e6-9cd5-febf88baed47.png)
+
+* For qa,staging and production environments, the `docker-compose-deploy.yml` would be used to configure heavyweight services outside of  docker-compose.  Use it insead of docker-compose-*.yml.
 
 
 ## potentially useful aliases
