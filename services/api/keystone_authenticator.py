@@ -12,6 +12,7 @@ import pydash
 from pydash import deep_get
 from pydash import deep_pluck
 from flask import request
+from flask import current_app as app
 
 # This should be well-guarded server secret   (in a env, file or database).
 assert 'AUTHENTICATOR_SECRET' in os.environ
@@ -115,6 +116,7 @@ class BearerAuth(TokenAuth):
     def _find_projects(self, token=None):
         """ given a token, return project names """
         if not token:
+            app.logger.debug('_find_projects no token, default')
             return []
         return deep_pluck(token['roles'], 'scope.project')
 

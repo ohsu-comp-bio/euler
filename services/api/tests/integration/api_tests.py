@@ -9,23 +9,8 @@ from json import dumps
 import os
 
 
-# Python 2
-# import httplib as http_client
-# import logging
-
-
 def _development_login(client):
-    # save current auth, and ensure ohsu_authenticator used for this test
-    r = client.post('/v0/login',
-                    data=dumps({"domain":
-                                os.environ.get('OS_USER_DOMAIN_NAME'),
-                                "user": os.environ.get('OS_USERNAME'),
-                                "password": os.environ.get('OS_PASSWORD')
-                                }),
-                    content_type='application/json')
-    assert r.status_code == 200
-    assert r.json['id_token']
-    return r.json['id_token']
+    return global_id_token
 
 
 def test_simple_post_file(client):
@@ -57,7 +42,7 @@ def test_simple_get_file(client):
     assert len(r.json) > 0
 
 
-def test_simple_get_file_x_auth(client):
+def test_simple_get_file_x_auth(client, app):
     """
     should respond with ok
     """
@@ -69,7 +54,7 @@ def test_simple_get_file_x_auth(client):
     # requests_log.propagate = True
 
     id_token = _development_login(client)
-    auth = BearerAuth()
+    auth = app.auth
     profile = auth.parse_token(id_token)
 
     headers = {'X-Auth-Token': profile['token']}

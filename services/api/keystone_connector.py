@@ -12,6 +12,7 @@ import os
 from keystoneclient import client
 from keystoneauth1.identity import v3
 from keystoneauth1 import session
+from flask import current_app as app
 
 
 def get_token_and_roles(username, user_domain_name, password):
@@ -30,6 +31,7 @@ def get_token_and_roles(username, user_domain_name, password):
         token['user']['email'] = user.email
     else:
         token['user']['email'] = 'None'
+    app.logger.debug('get_token_and_roles {} {}'.format(token, role_assignments))
     return token, role_assignments
 
 
@@ -48,7 +50,6 @@ def validate_token(token, fetch_roles=False):
     if not fetch_roles:
         return token_info
     user_id = token_info['user']['id']
-    print 'user_id {}'.format(user_id)
     role_assignments = get_role_assignments(client, user_id)
     return token_info, role_assignments
 
