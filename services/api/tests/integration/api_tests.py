@@ -2,14 +2,11 @@
 """
 Test schema endpoint
 """
-from keystone_authenticator import BearerAuth
 import keystone_connector as connector
-
-from json import dumps
-import os
 
 
 def _development_login(client):
+    global global_id_token
     return global_id_token
 
 

@@ -52,6 +52,7 @@ def test_logout(client):
 
 
 def _development_login(client, app):
+    global global_id_token
     return global_id_token
 
 

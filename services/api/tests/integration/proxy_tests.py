@@ -4,11 +4,28 @@ Test proxy
 """
 import urllib
 import json
-import os
-from json import dumps
 
 # assumes OS_USERNAME has access to only one project
 MY_PROJECT = 'BRCA-UK'
+
+
+def test_donors_returns_ok(client, app):
+    """
+    should respond with ok and response from dcc
+    """
+    headers = {'Authorization': _login_bearer_token(client, app)}
+    app.logger.debug(headers)
+    params = {'from': 1, 'include': 'facets', 'size': 25}
+    r = client.get('/api/v1/donors',
+                   query_string=params, headers=headers)
+    assert r.status_code == 200
+    assert r.json.keys() == [u'pagination', u'hits', u'facets']
+    for hit in r.json['hits']:
+        assert hit['projectId'] == MY_PROJECT
+    if 'projectId' in r.json['facets']:
+        print r.json['facets']['projectId']
+        for term in r.json['facets']['projectId']['terms']:
+            assert term['term'] == MY_PROJECT
 
 
 def test_status_returns_ok(client):
@@ -138,4 +155,5 @@ def test_projects_genes_bad_project(client, app):
 
 
 def _login_bearer_token(client, app):
+    global global_id_token
     return 'Bearer {}'.format(global_id_token)

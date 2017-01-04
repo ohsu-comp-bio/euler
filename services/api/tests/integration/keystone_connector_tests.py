@@ -52,6 +52,7 @@ export TEST_OS_USER_DOMAIN_NAME="testing"
             """
                     )
 def test_should_list_roles_for_any_user():  # pragma nocoverage
+    global global_id_token
     if global_id_token:  # already tested
         return
     token, role_assignments = connector.get_token_and_roles(
