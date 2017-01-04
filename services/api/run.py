@@ -147,6 +147,15 @@ def get_ui_search_gene_project_donor_counts(url):
         '/api/v1/ui/search/gene-project-donor-counts/{}'.format(url))
 
 
+@app.route('/api/v1/donors',
+           methods=['GET'])
+def get_donors():
+    """
+    filter donors request
+    """
+    return dcc_proxy.get_donors('/api/v1/donors')
+
+
 @app.route('/api/<path:url>', methods=['GET'])
 def get_any(url):
     """
@@ -163,6 +172,7 @@ def post_any(url):  # pragma nocoverage TODO
     return dcc_proxy.post_any(url)
 
 # Private util functions
+
 
 #  print useful information at startup
 app.logger.debug('URL map {}'.format(app.url_map))

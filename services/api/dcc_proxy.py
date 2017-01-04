@@ -20,7 +20,9 @@ def get_any(url):
     """
     Catch-All URL GET: Stream Proxy with Requests
     """
-    req = requests.get(_remote_url(), stream=True)
+    remote_url = _remote_url()
+    app.logger.debug(remote_url)
+    req = requests.get(remote_url, stream=True)
     # interesting example here ...
     # see http://www.programcreek.com/python/example/58918
     #        /flask.stream_with_context exec_query
@@ -156,6 +158,38 @@ def get_ui_search_gene_project_donor_counts(url):
     return response
 
 
+def get_donors(url):
+    """ apply project filter to files request /api/v1/donors"""
+    app.logger.debug('get_donors url {}'.format(url))
+    # if no whitelist_projects, abort
+    whitelist_projects = _whitelist_projects(True)
+    # create mutable dict
+    params = _ensure_filters()
+    # if no project_codes passed, set it to whitelist
+    params, project_codes = _ensure_donor_project_ids(params,
+                                                      whitelist_projects)
+    # unauthorized if project_codes not subset of whitelist
+    _abort_if_unauthorized(project_codes, whitelist_projects)
+    # call the remote
+    remote_response = requests.get(_remote_url(params))
+    # redact
+    d = remote_response.json()
+    if 'projectId' in d['facets']:
+        # redact project list
+        projects = d['facets']['projectId']
+        projects['terms'] = filter_(projects['terms'],
+                                    lambda term: term['term']
+                                    in whitelist_projects)
+        # re-aggregate after redaction
+        if 'terms' in projects and len(projects['terms']) > 0:
+            projects['total'] = reduce_(pluck(projects['terms'], 'count'),
+                                        lambda total, count: total + count)
+    # formulate response with redacted projects and original content type
+    response = make_response(dumps(d))
+    response.headers['Content-Type'] = remote_response.headers['content-type']
+    return response
+
+
 # Private util functions ########################################
 
 def _ensure_project_codes(params, whitelist_projects):
@@ -239,6 +273,19 @@ def _ensure_file_project_codes(params, whitelist_projects):
         params = deep_set(params,
                           'filters.file.projectCode.is', whitelist_projects)
         project_codes = deep_get(params, 'filters.file.projectCode.is')
+    return params, project_codes
+
+
+def _ensure_donor_project_ids(params, whitelist_projects):
+    """ set project code filter, returns project codes and updated params
+        {"donor":{"projectId":{"is":["ALL-US"]}}
+    """
+    project_codes = deep_get(params, 'filters.donor.projectId.is')
+    app.logger.debug('requested project_codes {}'.format(project_codes))
+    if not project_codes:
+        params = deep_set(params,
+                          'filters.donor.projectId.is', whitelist_projects)
+        project_codes = deep_get(params, 'filters.donor.projectId.is')
     return params, project_codes
 
 
