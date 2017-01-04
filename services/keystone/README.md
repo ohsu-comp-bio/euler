@@ -77,6 +77,8 @@ os role add --project baml --user ccc_user --user-domain testing  member
 os role add --project ccc --user ccc_user --user-domain testing  member
 os role add --project BRCA-UK --user admin --user-domain default  member
 os role add --project BRCA-UK --user test_user --user-domain testing  member
+os role add --project BRCA-UK --user walsbr --user-domain testing  member
+
 
 CLLE-ES
 ALL-US
