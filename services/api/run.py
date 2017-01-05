@@ -53,9 +53,9 @@ def _api_login():
             password=credentials['password'])
         return jsonify({'id_token': id_token})
     except Exception as e:
-        app.logger.debug(e)
         return Response('Invalid domain/user/password',
-                        401, {'message': 'Invalid domain/user/password'})
+                        401, {'message':
+                              'Invalid domain/user/password {}'.format(e)})
 
 
 @app.route('/login', methods=['POST', 'GET'])
@@ -154,6 +154,15 @@ def get_donors():
     filter donors request
     """
     return dcc_proxy.get_donors('/api/v1/donors')
+
+
+@app.route('/api/v1/download/info/<path:release>/Projects',
+           methods=['GET'])
+def get_download_info_projects(release):
+    """
+    redact download info request
+    """
+    return dcc_proxy.get_download_info_projects(release)
 
 
 @app.route('/api/<path:url>', methods=['GET'])

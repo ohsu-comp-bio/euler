@@ -9,12 +9,23 @@ import json
 MY_PROJECT = 'BRCA-UK'
 
 
-def test_donors_returns_ok(client, app):
+def test_redact_download_info(client, app):
     """
-    should respond with ok and response from dcc
+    should respond with ok and response from dcc, with MY_PROJECT in results
     """
     headers = {'Authorization': _login_bearer_token(client, app)}
-    app.logger.debug(headers)
+    r = client.get('/api/v1/download/info/current/Projects', headers=headers)
+    assert r.status_code == 200
+    assert len(r.json) > 0
+    for dir in r.json:
+        assert MY_PROJECT in dir['name'] or 'README' in dir['name']
+
+
+def test_donors_returns_ok(client, app):
+    """
+    should respond with ok and response from dcc, with MY_PROJECT in results
+    """
+    headers = {'Authorization': _login_bearer_token(client, app)}
     params = {'from': 1, 'include': 'facets', 'size': 25}
     r = client.get('/api/v1/donors',
                    query_string=params, headers=headers)
@@ -23,7 +34,6 @@ def test_donors_returns_ok(client, app):
     for hit in r.json['hits']:
         assert hit['projectId'] == MY_PROJECT
     if 'projectId' in r.json['facets']:
-        print r.json['facets']['projectId']
         for term in r.json['facets']['projectId']['terms']:
             assert term['term'] == MY_PROJECT
 
@@ -43,7 +53,6 @@ def test_files_returns_ok(client, app):
     should respond with ok and response from dcc
     """
     headers = {'Authorization': _login_bearer_token(client, app)}
-    app.logger.debug(headers)
     filters = {"file": {"repoName": {"is": ["Collaboratory - Toronto"]}}}
     filters = urllib.quote_plus(json.dumps(filters))
     params = {'filters': filters, 'from': 1, 'include': 'facets', 'size': 25}
@@ -113,7 +122,6 @@ def test_projects_returns_list_if_not_project_specified(client, app):
     filters = urllib.quote_plus(json.dumps(filters))
     params = {'filters': filters}
     r = client.get('/api/v1/projects', headers=headers, query_string=params)
-    print r.json
     assert r.status_code == 200
     assert len(r.json['hits']) == 1
 
