@@ -74,15 +74,16 @@ def html_login():
             user_domain_name=request.form['domain'],
             username=request.form['username'],
             password=request.form['password'])
-    except Exception as e:
-        app.logger.exception(e)
+    except Exception:
+        pass  # app.logger.exception(e)
     if not id_token:
         return render_template('login.html',
                                domain=request.form['domain'],
                                username=request.form['username'],
                                password=request.form['password'],
                                redirect_parm='',
-                               error='Invalid domain/user/password'), 401
+                               error='Invalid domain/user/pass'
+                               ), 401
     redirect_url = request.args.get('redirect')
     if redirect_url:
         return redirect(redirect_url + '?token={}'.format(id_token))
