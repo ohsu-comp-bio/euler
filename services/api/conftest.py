@@ -34,7 +34,6 @@ def myglobal(app, request):
     if GLOBAL_ID_TOKEN:
         request.function.func_globals['global_id_token'] = GLOBAL_ID_TOKEN
         return
-    print "calling login"
     # login and return bearer token
     client = app.test_client()
     r = client.post('/api/v1/ohsulogin',

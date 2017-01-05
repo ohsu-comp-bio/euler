@@ -160,7 +160,6 @@ def get_ui_search_gene_project_donor_counts(url):
 
 def get_donors(url):
     """ apply project filter to files request /api/v1/donors"""
-    app.logger.debug('get_donors url {}'.format(url))
     # if no whitelist_projects, abort
     whitelist_projects = _whitelist_projects(True)
     # create mutable dict
@@ -190,17 +189,38 @@ def get_donors(url):
     return response
 
 
+def get_download_info_projects(release):
+    """
+    if we look at the implementation of this endpoint, there are no filters
+    http://bit.ly/2iCeW8C So, redact the response strip off all projects
+    not in white list
+    """
+    # if no whitelist_projects, abort
+    whitelist_projects = _whitelist_projects(True)
+    # create mutable dict, this request has no parameters
+    params = request.args.copy()
+    # call the remote
+    remote_response = requests.get(_remote_url(params))
+    # redact
+
+    def dir_ok(name):
+        return 'README' in name or name in whitelist_projects
+
+    d = remote_response.json()
+    d = filter_(d,
+                lambda dir: dir_ok(dir['name'].split('/')[-1]))
+    # formulate response with redacted projects and original content type
+    response = make_response(dumps(d))
+    response.headers['Content-Type'] = remote_response.headers['content-type']
+    return response
+
+
 # Private util functions ########################################
 
 def _ensure_project_codes(params, whitelist_projects):
     """ set project code filter, returns project codes and updated params """
-    app.logger.debug('_ensure_project_codes {}'
-                     .format(params))
-
     project_codes = deep_get(params, 'filters.project.id.is')
     if project_codes:
-        app.logger.debug('requested filters.project.id.is {}'
-                         .format(project_codes))
         intersection = list(set(params).intersection(whitelist_projects))
         if len(intersection) == 0:
             intersection = whitelist_projects
@@ -208,21 +228,14 @@ def _ensure_project_codes(params, whitelist_projects):
         return params, project_codes
 
     project_codes = deep_get(params, 'filters.project.id.not')
-    app.logger.debug('filters.project.id.not? {}'
-                     .format(project_codes))
     if project_codes or project_codes == []:
-        app.logger.debug('requested filters.project.id.not {}'
-                         .format(project_codes))
         # remove the 'not'
         params = deep_set(params, 'filters.project.id', {})
         # set to 'is intersection'
         difference = list(set(whitelist_projects) - set(project_codes))
         params = deep_set(params, 'filters.project.id.is', difference)
-        app.logger.debug(params)
         return params, project_codes
 
-    app.logger.debug('setting default {}'
-                     .format(whitelist_projects))
     params = deep_set(params,
                       'filters.project.id.is', whitelist_projects)
     project_codes = deep_get(params, 'filters.project.id.is')
@@ -246,7 +259,6 @@ def _abort_if_unauthorized(project_codes, whitelist_projects):
 def _whitelist_projects(mandatory=False):
     """ return project list, abort if missing  """
     whitelist_projects = app.auth.projects(request=request)
-    app.logger.debug('whitelist_projects {}'.format(whitelist_projects))
     if mandatory and not whitelist_projects:
         abort(401, {'message': 'authorization required, no project access'})
     return whitelist_projects
@@ -268,7 +280,6 @@ def _ensure_filters():
 def _ensure_file_project_codes(params, whitelist_projects):
     """ set project code filter, returns project codes and updated params """
     project_codes = deep_get(params, 'filters.file.projectCode.is')
-    app.logger.debug('requested project_codes {}'.format(project_codes))
     if not project_codes:
         params = deep_set(params,
                           'filters.file.projectCode.is', whitelist_projects)
@@ -281,7 +292,6 @@ def _ensure_donor_project_ids(params, whitelist_projects):
         {"donor":{"projectId":{"is":["ALL-US"]}}
     """
     project_codes = deep_get(params, 'filters.donor.projectId.is')
-    app.logger.debug('requested project_codes {}'.format(project_codes))
     if not project_codes:
         params = deep_set(params,
                           'filters.donor.projectId.is', whitelist_projects)
