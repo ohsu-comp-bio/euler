@@ -9,6 +9,23 @@ import json
 MY_PROJECT = 'BRCA-UK'
 
 
+def test_should_validate_token_ok(client, app):
+    """
+    should respond with ok and response for token
+    """
+    headers = {'Authorization': _login_bearer_token(client, app)}
+    r = client.get('/api/v1/auth/verify', headers=headers)
+    assert r.status_code == 200
+
+
+def test_should_reject_missing_token(client, app):
+    """
+    should respond with ok and response for token
+    """
+    r = client.get('/api/v1/auth/verify')
+    assert r.status_code == 401
+
+
 def test_redact_download_info(client, app):
     """
     should respond with ok and response from dcc, with MY_PROJECT in results

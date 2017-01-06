@@ -6,7 +6,7 @@ Proxy front end to the dcc server
 
 import os
 from eve import Eve
-from flask import request, jsonify, Response
+from flask import request, jsonify, Response, abort
 from flask_cors import CORS
 from flask import redirect, render_template
 # our utilities
@@ -94,6 +94,19 @@ def html_login():
                            token=id_token,
                            redirect_parm=''
                            ), 201
+
+
+@app.route('/api/v1/auth/verify', methods=['GET'])
+def verify():
+    id_dict = app.auth.token(request)
+    if not id_dict:
+        abort(401, {'message': 'invalid token'})
+    return jsonify({"token": id_dict['token'],
+                    "username": '{}@{}'.format(id_dict['name'],
+                                               id_dict['domain_name']),
+                    "daco": False,
+                    "cloudAccess": True}
+                   )
 
 
 @app.route('/api/v1/repository/files', methods=['GET'])

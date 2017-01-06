@@ -22,6 +22,14 @@ def get_any(url):
     """
     remote_url = _remote_url()
     app.logger.debug(remote_url)
+    # Note: /api/browser/gene and /api/browser/mutation take differnet paths
+    # through the client (h2 add Authentication header)
+    # see dcc-portal-ui/app/vendor/scripts/genome-viewer/icgc-gene-adapter.js
+    whitelist_paths = ['/api/version', '/api/v1/releases/current',
+                       '/api/browser/gene', '/api/browser/mutation']
+    auth_required = request.path not in whitelist_paths
+    # if no whitelist_projects, abort
+    _whitelist_projects(auth_required)
     req = requests.get(remote_url, stream=True)
     # interesting example here ...
     # see http://www.programcreek.com/python/example/58918

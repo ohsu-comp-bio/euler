@@ -22,7 +22,7 @@ JWT_SECRET = os.environ.get('AUTHENTICATOR_SECRET',
 class BearerAuth(TokenAuth):
     """
     Override buildin basic auth
-    Create an ID token - development only
+    Create an ID token
     """
     def __init__(self):
         super(BearerAuth, self).__init__()
@@ -44,7 +44,7 @@ class BearerAuth(TokenAuth):
 
     def check_auth(self, token, allowed_roles, resource, method):
         """
-        This function replaces the builting check_auth, and can perform
+        This function replaces the builtin check_auth, and can perform
         arbitrary actions based on the result of the
         Access Control Rules Engine.
         """
