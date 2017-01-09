@@ -1,0 +1,11 @@
+################
+version: '2.1'
+services:
+
+  # run branded OHSU-branded DCC portal
+  portal:
+    container_name: portal-ui
+    build:
+      context: services/dcc-portal
+    ports:
+      - "${PORTAL_PORT}:${PORTAL_PORT}"
