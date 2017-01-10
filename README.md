@@ -62,6 +62,8 @@ MONGO_USERNAME=
 MONGO_PASSWORD=
 AUTHENTICATOR_SECRET=...your long string...
 
+# portal
+PORTAL_PORT=80
 
 ```
 
