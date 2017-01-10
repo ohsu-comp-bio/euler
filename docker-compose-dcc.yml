@@ -9,3 +9,7 @@ services:
       context: services/dcc-portal
     ports:
       - "${PORTAL_PORT}:${PORTAL_PORT}"
+    environment:
+      - PORT=${PORTAL_PORT}
+      - API_SOURCE=${API_URL}
+      - NODE_ENV=development
