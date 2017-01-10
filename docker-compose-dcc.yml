@@ -8,4 +8,6 @@ services:
     build:
       context: services/dcc-portal
     ports:
-      - "${PORTAL_PORT}:${PORTAL_PORT}"
+      - "${PORTAL_PORT}:9000"
+    links:
+      - api
