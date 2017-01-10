@@ -108,6 +108,9 @@ def get_files():
     # call PROXY_TARGET
     return _call_proxy_target(params)
 
+def get_files_summary():
+    """filter /api/v1/repository/files/summary by projects"""
+    
 
 def get_ui_search_projects_donor_mutation_counts(url):
     """
