@@ -11,3 +11,7 @@ services:
       - "${PORTAL_PORT}:9000"
     links:
       - api
+    environment:
+      - PORT=9000
+      - API_SOURCE=${API_URL}
+      - NODE_ENV=development
