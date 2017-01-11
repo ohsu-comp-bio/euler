@@ -8,8 +8,10 @@ services:
     build:
       context: services/dcc-portal
     ports:
-      - "${PORTAL_PORT}:${PORTAL_PORT}"
+      - "${PORTAL_PORT}:9000"
+    links:
+      - api
     environment:
-      - PORT=${PORTAL_PORT}
+      - PORT=9000
       - API_SOURCE=${API_URL}
       - NODE_ENV=development
