@@ -9,6 +9,21 @@ import json
 MY_PROJECT = 'BRCA-UK'
 
 
+def test_should_create_external_entityset_ok(client, app):
+    """
+    should respond with ok /api/v1/entityset/external
+    """
+    headers = {'Authorization': _login_bearer_token(client, app),
+               'Content-Type': 'application/json'}
+    data = {"filters": {}, "size": 173535, "type": "DONOR",
+            "name": "Input donor set", "description": "", "isTransient": True,
+            "sortBy": "fileName", "sortOrder": "DESCENDING"}
+    r = client.post('/api/v1/entityset/external', headers=headers,
+                    data=json.dumps(data))
+    assert r.status_code == 201
+    assert r.json['id']
+
+
 def test_should_validate_token_ok(client, app):
     """
     should respond with ok and response for token
@@ -53,6 +68,19 @@ def test_donors_returns_ok(client, app):
     if 'projectId' in r.json['facets']:
         for term in r.json['facets']['projectId']['terms']:
             assert term['term'] == MY_PROJECT
+
+
+def test_donors_facets_only_ok(client, app):
+    """
+    should respond with ok and response from dcc, when facetsOnly=true
+    and filter parameter created by browser is bad
+    """
+    headers = {'Authorization': _login_bearer_token(client, app)}
+    params = {'facetsOnly': True, 'include': 'facets', 'size': 10,
+              'from': 1, 'filters': '{"donor":{"id":{"is":["ES:undefined"]}}}'}
+    r = client.get('/api/v1/donors',
+                   query_string=params, headers=headers)
+    assert r.status_code == 400
 
 
 def test_status_returns_ok(client):
