@@ -116,6 +116,7 @@ def get_files():
     """
     return dcc_proxy.get_files()
 
+
 @app.route('/api/v1/repository/files/summary', methods=['GET'])
 def get_files_summary():
     """
