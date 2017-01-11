@@ -116,12 +116,12 @@ def get_files():
     """
     return dcc_proxy.get_files()
 
-#@app.route('/api/v1/repository/files/summary', methods=['GET'])
-#def get_files_summary():
-#    """
-#    filter donor summary request
-#    """
-#    return dcc_proxy.get_files_summary()
+@app.route('/api/v1/repository/files/summary', methods=['GET'])
+def get_files_summary():
+    """
+    filter donor summary request
+    """
+    return dcc_proxy.get_files_summary()
 
 
 @app.route('/api/v1/projects/<path:projects>/genes', methods=['GET'])

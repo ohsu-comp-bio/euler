@@ -115,7 +115,8 @@ def get_files_summary():
     # create mutable dict
     params = _ensure_filters()
     # if no project_codes passed, set it to whitelist
-    params, project_codes = _ensure_file_project_codes(params, whitelist_projects)
+    params, project_codes = _ensure_file_project_codes(params, 
+                                                       whitelist_projects)
     # unauthorized if project_codes not subset of whitelist
     _abort_if_unauthorized(project_codes, whitelist_projects)
     # call PROXY_TARGET
