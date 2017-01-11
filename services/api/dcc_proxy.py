@@ -114,6 +114,19 @@ def get_files():
     # call PROXY_TARGET
     return _call_proxy_target(params)
 
+def get_files_summary():
+    """ apply project filter to files request /api/v1/repository/files/summary """
+    # if no whitelist_projects, abort
+    whitelist_projects = _whitelist_projects(True)
+    # create mutable dict
+    params = _ensure_filters()
+    # if no project_codes passed, set it to whitelist
+    params, project_codes = _ensure_file_project_codes(params, 
+                                                       whitelist_projects)
+    # unauthorized if project_codes not subset of whitelist
+    _abort_if_unauthorized(project_codes, whitelist_projects)
+    # call PROXY_TARGET
+    return _call_proxy_target(params)
 
 def get_ui_search_projects_donor_mutation_counts(url):
     """
