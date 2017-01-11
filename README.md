@@ -95,9 +95,9 @@ We use [docker compose extends](https://docs.docker.com/compose/extends/) in add
 ## potentially useful aliases
 
 ```
-alias up="docker-compose -f docker-compose.yml  -f docker-compose-openstack.yml -f docker-compose-dcc.yml up"
-alias stop="docker-compose -f docker-compose.yml  -f docker-compose-openstack.yml -f docker-compose-dcc.yml stop"
-alias build="docker-compose -f docker-compose.yml  -f docker-compose-openstack.yml  -f docker-compose-dcc.yml build"
+alias up="docker-compose -f docker-compose.yml  -f docker-compose-openstack.yml -f docker-compose-development.yml -f docker-compose-dcc.yml up"
+alias stop="docker-compose -f docker-compose.yml  -f docker-compose-openstack.yml -f docker-compose-development.yml -f docker-compose-dcc.yml stop"
+alias build="docker-compose -f docker-compose.yml  -f docker-compose-openstack.yml -f docker-compose-development.yml -f docker-compose-dcc.yml build"
 
 execfunction() {
     docker exec -it $1 bash
