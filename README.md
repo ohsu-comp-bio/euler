@@ -67,9 +67,16 @@ PORTAL_PORT=80
 
 ```
 
+Initialize dcc submodule
+
+```
+git submodule update --init --recursive
+```
+
+
 Then:
 
-* ```docker-compose -f docker-compose.yml -f docker-compose-development.yml -f docker-compose-openstack.yml -f docker-compose-dcc.yml up```
+* ```docker-compose -f docker-compose.yml  -f docker-compose-openstack.yml -f docker-compose-dcc.yml up```
 * configure [keystone](services/keystone/README.md)
 * configure [swift](services/swift/README.md)
 
@@ -83,13 +90,14 @@ We use [docker compose extends](https://docs.docker.com/compose/extends/) in add
 
 * For qa, staging, and production environments, the `docker-compose-deploy.yml` would be used to configure heavyweight services outside of  docker-compose.  Use it insead of docker-compose-*.yml.
 
+* For development tasks, a docker-compose-development.yml file is provided to provide elastic, mongo, etc.
 
 ## potentially useful aliases
 
 ```
-alias up="docker-compose -f docker-compose.yml -f docker-compose-development.yml -f docker-compose-openstack.yml -f docker-compose-dcc.yml up"
-alias stop="docker-compose -f docker-compose.yml -f docker-compose-development.yml -f docker-compose-openstack.yml -f docker-compose-dcc.yml stop"
-alias build="docker-compose -f docker-compose.yml -f docker-compose-development.yml -f docker-compose-openstack.yml  -f docker-compose-dcc.yml build"
+alias up="docker-compose -f docker-compose.yml  -f docker-compose-openstack.yml -f docker-compose-dcc.yml up"
+alias stop="docker-compose -f docker-compose.yml  -f docker-compose-openstack.yml -f docker-compose-dcc.yml stop"
+alias build="docker-compose -f docker-compose.yml  -f docker-compose-openstack.yml  -f docker-compose-dcc.yml build"
 
 execfunction() {
     docker exec -it $1 bash
