@@ -9,6 +9,16 @@ import json
 MY_PROJECT = 'BRCA-UK'
 
 
+def test_should_logout_ok(client, app):
+    """
+    should respond with ok /api/v1/auth/logout
+    """
+    headers = {'Authorization': _login_bearer_token(client, app),
+               'Content-Type': 'application/json'}
+    r = client.post('/api/v1/auth/logout', headers=headers)
+    assert r.status_code == 200
+
+
 def test_should_create_external_entityset_ok(client, app):
     """
     should respond with ok /api/v1/entityset/external
