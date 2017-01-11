@@ -4,7 +4,7 @@ services:
 
   # run branded OHSU-branded DCC portal
   portal:
-    container_name: portal-ui
+    container_name: portal
     build:
       context: services/dcc-portal
     ports:
