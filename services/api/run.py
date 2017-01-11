@@ -34,11 +34,11 @@ def _configure_app():
 app = _configure_app()
 
 
-@app.route('/v0/logout', methods=['POST'])
+@app.route('/api/v1/auth/logout', methods=['POST'])
 def _development_logout():
     """stub manual logout"""
     return jsonify(
-        {'message': 'development user logged out'}
+        {'message': 'user logged out'}
     )
 
 
