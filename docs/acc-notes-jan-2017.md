@@ -9,7 +9,7 @@ On Wed Sep 14, Marion wrote:
 What follows is an expansion of an ACC-internal document I wrote a
 couple months ago. It's not as polished as I'd like, but I think
 you'll get the gist of the major issues I think need to be addressed.
-Some will impact budget, others our workflows. Very are insignificant
+Some will impact budget, others our workflows. Very few are insignificant
 enough to be ignored and a couple may lead us to a complete
 re-installation of our infrastructure.
 
