@@ -15,7 +15,7 @@ re-installation of our infrastructure.
 
 ## The BIG questions
 
-* Goals
+***Goals***
 
 Communication between users of Exastack and ACC has not been clear and
 consistent. One of the goals of the pilot is to provide users and ACC
@@ -33,7 +33,7 @@ Other questions have arisen since the pilot started, particularly
 how best to interface with the newly expanded ITG Security Team
 (SECE). This issue will throw lots of wrenches in our workflows.
 
-* Platform
+***Platform***
 
 The pilot was setup with CentOS 7 using [RDO packstack](https://www.rdoproject.org/install/quickstart/), which was relatively quick, reproducible, and used a platform with which I'm very familiar. RDO isn't the only game in town. In no particular order, there's also
 
