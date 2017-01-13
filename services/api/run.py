@@ -178,6 +178,41 @@ def get_donors():
     return dcc_proxy.get_donors('/api/v1/donors')
 
 
+@app.route('/api/v1/genes',
+           methods=['GET'])
+def get_genes():
+    """
+    filter genes request
+    """
+    return dcc_proxy.get_genes('/api/v1/genes')
+ 
+
+@app.route('/api/v1/genes/count',
+           methods=['GET'])
+def genes_count():
+    """
+    filter genes count request
+    """
+    return dcc_proxy.get_genes_count('/api/v1/genes/count')
+
+
+@app.route('/api/v1/genesets/<path:geneSetIds>/genes/counts',
+           methods=['GET'])
+def get_genesets_genes_counts(geneSetIds):
+    """
+    filter genesets/{geneSetId}/genes/count request
+    """
+    return dcc_proxy.get_genesets_genes_counts('/api/v1/genesets', geneSetIds)
+
+
+@app.route('/api/v1/mutations', 
+           methods=['GET'])
+def get_mutations():
+    """
+    filter mutations request
+    """
+    return dcc_proxy.get_mutations('/api/v1/mutations')
+
 @app.route('/api/v1/download/info/<path:release>/Projects',
            methods=['GET'])
 def get_download_info_projects(release):
