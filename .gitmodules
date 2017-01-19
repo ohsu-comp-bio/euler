@@ -1,0 +1,3 @@
+[submodule "services/dcc-portal"]
+	path = services/dcc-portal
+	url = git@github.com:ohsu-computational-biology/dcc-portal.git

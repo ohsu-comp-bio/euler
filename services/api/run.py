@@ -34,11 +34,11 @@ def _configure_app():
 app = _configure_app()
 
 
-@app.route('/v0/logout', methods=['POST'])
+@app.route('/api/v1/auth/logout', methods=['POST'])
 def _development_logout():
     """stub manual logout"""
     return jsonify(
-        {'message': 'development user logged out'}
+        {'message': 'user logged out'}
     )
 
 
@@ -115,6 +115,14 @@ def get_files():
     filter files request
     """
     return dcc_proxy.get_files()
+
+
+@app.route('/api/v1/repository/files/summary', methods=['GET'])
+def get_files_summary():
+    """
+    filter donor summary request
+    """
+    return dcc_proxy.get_files_summary()
 
 
 @app.route('/api/v1/projects/<path:projects>/genes', methods=['GET'])

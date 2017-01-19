@@ -21,7 +21,6 @@ def get_any(url):
     Catch-All URL GET: Stream Proxy with Requests
     """
     remote_url = _remote_url()
-    app.logger.debug(remote_url)
     # Note: /api/browser/gene and /api/browser/mutation take differnet paths
     # through the client (h2 add Authentication header)
     # see dcc-portal-ui/app/vendor/scripts/genome-viewer/icgc-gene-adapter.js
@@ -31,6 +30,7 @@ def get_any(url):
     # if no whitelist_projects, abort
     _whitelist_projects(auth_required)
     req = requests.get(remote_url, stream=True)
+    app.logger.debug('GET {} {}'.format(remote_url, req.status_code))
     # interesting example here ...
     # see http://www.programcreek.com/python/example/58918
     #        /flask.stream_with_context exec_query
@@ -38,13 +38,19 @@ def get_any(url):
                     content_type=req.headers['content-type'])
 
 
-def post_any(url):  # pragma nocoverage  TODO
+def post_any(url):
     """
     Catch-All URL POST: Stream Proxy with Requests
     """
-    req = requests.post(_remote_url(), stream=True)
+    remote_url = _remote_url()
+    headers = {'Content-Type': 'application/json'}
+    req = requests.post(remote_url, stream=True,
+                        data=request.data, headers=headers,
+                        allow_redirects=True)
+    app.logger.debug('POST {} {}'.format(remote_url, req.status_code))
     return Response(stream_with_context(req.iter_content()),
-                    content_type=req.headers['content-type'])
+                    content_type=req.headers['content-type'],
+                    status=req.status_code)
 
 
 def get_projects(url):
@@ -96,6 +102,22 @@ def get_projects_history(url):
 
 def get_files():
     """ apply project filter to files request /api/v1/repository/files"""
+    # if no whitelist_projects, abort
+    whitelist_projects = _whitelist_projects(True)
+    # create mutable dict
+    params = _ensure_filters()
+    # if no project_codes passed, set it to whitelist
+    params, project_codes = _ensure_file_project_codes(params,
+                                                       whitelist_projects)
+    # unauthorized if project_codes not subset of whitelist
+    _abort_if_unauthorized(project_codes, whitelist_projects)
+    # call PROXY_TARGET
+    return _call_proxy_target(params)
+
+
+def get_files_summary():
+    """ apply project filter to files request
+    /api/v1/repository/files/summary """
     # if no whitelist_projects, abort
     whitelist_projects = _whitelist_projects(True)
     # create mutable dict
@@ -181,7 +203,7 @@ def get_donors(url):
     remote_response = requests.get(_remote_url(params))
     # redact
     d = remote_response.json()
-    if 'projectId' in d['facets']:
+    if 'facets' in d and 'projectId' in d['facets']:
         # redact project list
         projects = d['facets']['projectId']
         projects['terms'] = filter_(projects['terms'],
@@ -194,6 +216,7 @@ def get_donors(url):
     # formulate response with redacted projects and original content type
     response = make_response(dumps(d))
     response.headers['Content-Type'] = remote_response.headers['content-type']
+    response.status_code = remote_response.status_code
     return response
 
 
