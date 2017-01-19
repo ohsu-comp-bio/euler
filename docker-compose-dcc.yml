@@ -1,0 +1,17 @@
+################
+version: '2.1'
+services:
+
+  # run branded OHSU-branded DCC portal
+  portal:
+    container_name: portal
+    build:
+      context: services/dcc-portal
+    ports:
+      - "${PORTAL_PORT}:9000"
+    links:
+      - api
+    environment:
+      - PORT=9000
+      - API_SOURCE=${API_URL}
+      - NODE_ENV=development

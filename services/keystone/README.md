@@ -47,6 +47,16 @@ os  domain  list
 os  project  create ccc
 os  project  create baml --parent ccc
 os  project  create brca --parent ccc
+os  project  create BRCA-UK --parent ccc
+os  project  create  CLLE-ES  --parent ccc
+os  project  create  ALL-US  --parent ccc
+os  project  create  LAML-US  --parent ccc
+os  project  create  AML-US  --parent ccc
+os  project  create  LAML-KR  --parent ccc
+os  project  create  CMDI-UK  --parent ccc
+os  project  create  MALY-DE  --parent ccc
+os  project  create  LAML-CN  --parent ccc
+os  project  create  DLBC-US  --parent ccc
 os  role create member
 
 # add user
@@ -58,13 +68,27 @@ os  domain  create testing
 os user create --password password  --domain testing brca_user
 os user create --password password  --domain testing baml_user
 os user create --password password  --domain testing ccc_user
+os user create --password password  --domain testing test_user
+
 os role add --project brca --user brca_user --user-domain testing  member
 os role add --project baml --user baml_user --user-domain testing  member
 os role add --project brca --user ccc_user --user-domain testing  member
 os role add --project baml --user ccc_user --user-domain testing  member
 os role add --project ccc --user ccc_user --user-domain testing  member
+os role add --project BRCA-UK --user admin --user-domain default  member
+os role add --project BRCA-UK --user test_user --user-domain testing  member
+os role add --project BRCA-UK --user walsbr --user-domain testing  member
 
 
+CLLE-ES
+ALL-US
+LAML-US
+AML-US
+LAML-KR
+CMDI-UK
+MALY-DE
+LAML-CN
+DLBC-US
 
 # show membership
 os role assignment list  --name

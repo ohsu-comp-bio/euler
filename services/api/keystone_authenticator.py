@@ -22,7 +22,7 @@ JWT_SECRET = os.environ.get('AUTHENTICATOR_SECRET',
 class BearerAuth(TokenAuth):
     """
     Override buildin basic auth
-    Create an ID token - development only
+    Create an ID token
     """
     def __init__(self):
         super(BearerAuth, self).__init__()
@@ -44,7 +44,7 @@ class BearerAuth(TokenAuth):
 
     def check_auth(self, token, allowed_roles, resource, method):
         """
-        This function replaces the builting check_auth, and can perform
+        This function replaces the builtin check_auth, and can perform
         arbitrary actions based on the result of the
         Access Control Rules Engine.
         """
@@ -115,6 +115,7 @@ class BearerAuth(TokenAuth):
     def _find_projects(self, token=None):
         """ given a token, return project names """
         if not token:
+            # app.logger.debug('_find_projects no token, default')
             return []
         return deep_pluck(token['roles'], 'scope.project')
 

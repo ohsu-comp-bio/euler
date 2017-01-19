@@ -47,11 +47,14 @@ def test_should_validate_token_for_auth_user():
 Please configure [TEST_OS_USERNAME,TEST_OS_USER_DOMAIN_NAME,TEST_OS_PASSWORD]
 if you would like to test end user authentication.
 export TEST_OS_PASSWORD="password"
-export TEST_OS_USERNAME="baml_user"
+export TEST_OS_USERNAME="test_user"
 export TEST_OS_USER_DOMAIN_NAME="testing"
             """
                     )
 def test_should_list_roles_for_any_user():  # pragma nocoverage
+    global global_id_token
+    if global_id_token:  # already tested
+        return
     token, role_assignments = connector.get_token_and_roles(
         username=os.environ.get('TEST_OS_USERNAME'),
         user_domain_name=os.environ.get(

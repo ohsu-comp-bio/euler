@@ -52,20 +52,8 @@ def test_logout(client):
 
 
 def _development_login(client, app):
-    # save current auth, and ensure ohsu_authenticator used for this test
-    old_auth = app.auth
-    app.auth = BearerAuth()
-    r = client.post('/v0/login',
-                    data=dumps({"domain":
-                                os.environ.get('OS_USER_DOMAIN_NAME'),
-                                "user": os.environ.get('OS_USERNAME'),
-                                "password": os.environ.get('OS_PASSWORD')
-                                }),
-                    content_type='application/json')
-    app.auth = old_auth
-    assert r.status_code == 200
-    assert r.json['id_token']
-    return r.json['id_token']
+    global global_id_token
+    return global_id_token
 
 
 def test_project_lookup(client, app):
@@ -101,11 +89,9 @@ def test_bad_login(client, app):
     """
     should respond with ok and user
     """
-    old_auth = app.auth
-    app.auth = BearerAuth()
-    r = client.post('/v0/login', headers={'content-type': 'application/json'},
+    r = client.post('/api/v1/ohsulogin',
+                    headers={'content-type': 'application/json'},
                     data=dumps({'user': 'FOO', 'password': 'password'}))
-    app.auth = old_auth
     assert r.status_code == 401
 
 

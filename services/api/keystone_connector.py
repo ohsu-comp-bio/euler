@@ -42,13 +42,12 @@ def get_role_assignments(client, user_id):
 def validate_token(token, fetch_roles=False):
     """ returns access information. throws exception if invalid token """
     client = _authenticated_session()
-    if not isinstance(token, basestring):
-        token = token['auth_token']
+    # if not isinstance(token, basestring):
+    #     token = token['auth_token']
     token_info = client.tokens.validate(token)
     if not fetch_roles:
         return token_info
     user_id = token_info['user']['id']
-    print 'user_id {}'.format(user_id)
     role_assignments = get_role_assignments(client, user_id)
     return token_info, role_assignments
 

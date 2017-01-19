@@ -31,30 +31,35 @@ $ docker exec -it api  bash
 
 # for some reason, this needs to be set in order to
 # for eve to run ( gets config not found otherwise )
-$ export EVE_SETTINGS=$(pwd)/settings.py
+export EVE_SETTINGS=$(pwd)/settings.py
+
+# set test user - should have access to only one project 'BRCA-UK'
+export TEST_OS_PASSWORD="password"
+export TEST_OS_USERNAME="test_user"
+export TEST_OS_USER_DOMAIN_NAME="testing"
 
 # then start tests
-$ py.test --flake8 --cov=. --cov-report term-missing
-
+py.test --flake8 --cov=. --cov-report term-missing
 
 ---------- coverage: platform linux2, python 2.7.11-final-0 ----------
 Name                                                Stmts   Miss  Cover   Missing
 ---------------------------------------------------------------------------------
-conftest.py                                             8      0   100%
+conftest.py                                            23      0   100%
+dcc_proxy.py                                          125      0   100%
 eve_util.py                                             4      0   100%
-keystone_authenticator.py                              60      0   100%
-keystone_connector.py                                  29      0   100%
+keystone_authenticator.py                              73      0   100%
+keystone_connector.py                                  39      0   100%
 publisher.py                                            3      0   100%
-run.py                                                 35      0   100%
-settings.py                                            24      0   100%
-tests/integration/api_tests.py                          5      0   100%
-tests/integration/keystone_authenticator_tests.py      80      0   100%
+run.py                                                 61      0   100%
+settings.py                                            23      0   100%
+tests/integration/api_tests.py                         28      0   100%
+tests/integration/keystone_authenticator_tests.py      88      0   100%
 tests/integration/keystone_connector_tests.py          25      0   100%
-tests/integration/proxy_tests.py                        5      0   100%
-tests/integration/schema_tests.py                       5      0   100%
+tests/integration/proxy_tests.py                       89      0   100%
+tests/integration/schema_tests.py                       1      0   100%
+tests/integration/static_tests.py                      20      0   100%
 ---------------------------------------------------------------------------------
-TOTAL                                                 283      0   100%
-
+TOTAL                                                 602      0   100%
 ```
 
 ## TODO
