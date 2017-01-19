@@ -8,10 +8,14 @@ services:
     build:
       context: services/dcc-portal
     ports:
-      - "${PORTAL_PORT}:9000"
+      - "${PORTAL_PORT}:${PORTAL_PORT}"
     links:
       - api
+    volumes:
+      - "${CERT_DIR_PATH}:/certs/"
     environment:
-      - PORT=9000
+      - PORT=${PORTAL_PORT}
       - API_SOURCE=${API_URL}
+      - KEY_PATH=${KEY_PATH}
+      - CERT_PATH=${CERT_PATH}
       - NODE_ENV=development

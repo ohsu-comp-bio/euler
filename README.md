@@ -63,7 +63,13 @@ MONGO_PASSWORD=
 AUTHENTICATOR_SECRET=...your long string...
 
 # portal
-PORTAL_PORT=80
+# see docker-compose-dcc.yml
+PORTAL_PORT=443
+# full path volume mount point, mounted in container as '/certs'
+CERT_DIR_PATH=... full path name to directory containing .cer & .key
+# paths to cert & key relative to container, see services/dcc-portal/dcc-portal-ui/tasks/start.js
+KEY_PATH=/certs/full-name.key
+CERT_PATH=/certs/full-name.cer
 
 ```
 
