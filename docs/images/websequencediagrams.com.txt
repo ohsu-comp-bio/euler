@@ -1,0 +1,14 @@
+# see https://www.websequencediagrams.com/
+Client->Keystone: credentials[user,pass]
+Keystone->Client: token
+Client->AnyService: /any/url header:[token,...]
+AnyService->Keystone: validate(token)
+Keystone->AnyService: project_roles[...]
+alt token-invalid-or-no-role-onproject
+    AnyService->Client:unauthorized
+    note right of Client: 401 returned
+else valid
+    AnyService->AnyService:any-compute
+    AnyService->Client:response
+    note right of Client: service data
+end

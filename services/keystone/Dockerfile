@@ -3,7 +3,7 @@ MAINTAINER walsbr "walsbr@ohsu.edu"
 
 # see https://wiki.opnfv.org/display/functest/OpenStack+python+clients
 ENV VERSION=10.0.0
-ENV CLIENT_VERSION=3.2.0
+ENV CLIENT_VERSION=3.7.0
 
 # update catalog, install keystone dependencies, ldap dependencies,
 # dev dependencies & the clean up
