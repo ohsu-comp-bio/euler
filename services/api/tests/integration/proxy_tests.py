@@ -288,7 +288,11 @@ def test_projects_returns_list_if_not_project_specified(client, app):
 
 def test_gene_project_donor_counts(client, app):
     headers = {'Authorization': _login_bearer_token(client, app)}
-    r = client.get('/api/v1/ui/search/gene-project-donor-counts/ENSG00000005339??filters=%7B%22mutation%22:%7B%22functionalImpact%22:%7B%22is%22:%5B%22High%22%5D%7D%7D%7D', headers=headers)  # NOQA
+    filters = {"mutation" : {"functionalImpact": {"is": "High"}}}
+    filters = urllib.quote_plus(json.dumps(filters))
+    params = {'filters': filters}
+    r = client.get('/api/v1/ui/search/gene-project-donor-counts/ENSG00000005339??',
+                   query_string=params, headers=headers)  # NOQA
     assert r.status_code == 200
     assert r.json['ENSG00000005339']
     assert r.json['ENSG00000005339']['terms'][0]['term'] == MY_PROJECT
