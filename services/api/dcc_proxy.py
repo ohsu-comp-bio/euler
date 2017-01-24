@@ -228,7 +228,7 @@ def get_genes(url):
     params = _ensure_filters()
     # if no project_codes passed, set it to whitelist
     params, project_codes = _ensure_donor_project_ids(params,
-                                                        whitelist_projects)
+                                                      whitelist_projects)
     # unauthorized if project_codes not subset of whitelist
     _abort_if_unauthorized(project_codes, whitelist_projects)
     # call PROXY_TARGET
@@ -243,7 +243,7 @@ def get_genes_count(url):
     params = _ensure_filters()
     # if no project_codes passed, set it to whitelist
     params, project_codes = _ensure_donor_project_ids(params,
-                                                        whitelist_projects)
+                                                      whitelist_projects)
     # unauthorized if project_codes not subset of whitelist
     _abort_if_unauthorized(project_codes, whitelist_projects)
     # call PROXY_TARGET
@@ -251,21 +251,23 @@ def get_genes_count(url):
 
 
 def get_genesets_genes_counts(url, geneSetIds):
-    """ apply project filter to request /api/v1/geneset/{geneSetId}/genes/counts """
+    """
+    apply project filter to request /api/v1/geneset/{geneSetId}/genes/counts
+    """
     # if no whitelist_projects, abort
     whitelist_projects = _whitelist_projects(True)
     # create mutatble dict
     params = _ensure_filters()
     # if no project_codes passed, set it to whitelist
     params, project_codes = _ensure_donor_project_ids(params,
-                                                        whitelist_projects)
+                                                      whitelist_projects)
     # unauthorized if project_codes not subset of whitelist
     _abort_if_unauthorized(project_codes, whitelist_projects)
     # call the remote
     url = url + geneSetIds + '/genes/counts'
     app.logger.debug("LOOK HERE")
     app.logger.debug(url)
-    remote_response = requests.get(_remote_url(params))    
+    remote_response = requests.get(_remote_url(params))
     d = remote_response.json()
     response = make_response(dumps(d))
     response.headers['Content-Type'] = remote_response.headers['content-type']
@@ -280,8 +282,8 @@ def get_mutations(url):
     # create mutatble dict
     params = _ensure_filters()
     # if no project_codes passed, set it to whitelist
-    params, project_codes = _ensure_donor_project_ids(params, 
-                                                        whitelist_projects)
+    params, project_codes = _ensure_donor_project_ids(params,
+                                                      whitelist_projects)
     # unauthorized if project_codes not subset of whitelist
     _abort_if_unauthorized(project_codes, whitelist_projects)
     # call PROXY_TARGET

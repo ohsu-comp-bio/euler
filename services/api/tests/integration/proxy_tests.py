@@ -9,6 +9,7 @@ import json
 MY_PROJECT = 'BRCA-UK'
 MY_GENESET = 'GS1'
 
+
 def test_should_logout_ok(client, app):
     """
     should respond with ok /api/v1/auth/logout
@@ -88,8 +89,9 @@ def test_genes_returns_ok(client, app):
     params = {'from': 1, 'include': 'facets', 'size': 25}
     filters = {"donor": {"projectId": {"is": ["BRCA-UK"]}}}
     filters = urllib.quote_plus(json.dumps(filters))
-    params_filtered = {'from': 1, 'include': 'facets', 'size': 25, 'filters': filters}
-    r = client.get('/api/v1/genes', 
+    params_filtered = {'from': 1, 'include': 'facets', 'size': 25,
+                       'filters': filters}
+    r = client.get('/api/v1/genes',
                    query_string=params, headers=headers)
     assert r.status_code == 200
     assert r.json.keys() == [u'pagination', u'hits', u'facets']
@@ -111,7 +113,8 @@ def test_genes_count_returns_ok(client, app):
     filters = {"gene": {"hasPathway": 'true'}}
     filters = urllib.quote_plus(json.dumps(filters))
     params = {'filters': filters}
-    filters = {"gene": {"hasPathway": 'true'}, "donor": {"projectId": {"is": ["BRCA-UK"]}}}
+    filters = {"gene": {"hasPathway": 'true'},
+               "donor": {"projectId": {"is": ["BRCA-UK"]}}}
     filters = urllib.quote_plus(json.dumps(filters))
     params_filtered = {'filters': filters}
     r = client.get('/api/v1/genes/count',
@@ -147,7 +150,8 @@ def test_mutations_returns_ok(client, app):
     params = {'from': 1, 'include': 'facets', 'size': 25}
     filters = {"donor": {"projectId": {"is": ["BRCA-UK"]}}}
     filters = urllib.quote_plus(json.dumps(filters))
-    params_filtered = {'from': 1, 'include': 'facets', 'size': 25, 'filters': filters}
+    params_filtered = {'from': 1, 'include': 'facets', 'size': 25,
+                       'filters': filters}
     r = client.get('/api/v1/mutations',
                    query_string=params, headers=headers)
     assert r.status_code == 200
@@ -193,19 +197,21 @@ def test_files_summary(client, app):
     filters = {"file": {"projectCode": {"is": ["BRCA-UK"]}}}
     filters = urllib.quote_plus(json.dumps(filters))
     params = {'from': 1, 'include': 'facets', 'size': 25}
-    params_filtered = {'filters': filters, 'from': 1, 'include': 'facets', 'size': 25}
+    params_filtered = {'filters': filters, 'from': 1, 'include': 'facets',
+                       'size': 25}
     r = client.get('/api/v1/repository/files/summary',
                    query_string=params, headers=headers)
     assert r.status_code == 200
-    assert r.json.keys() == [u'projectCount', u'totalFileSize', u'donorCount', 
+    assert r.json.keys() == [u'projectCount', u'totalFileSize', u'donorCount',
                              u'primarySiteCount', u'fileCount']
     r_filtered = client.get('/api/v1/repository/files/summary',
-                   query_string=params_filtered, headers=headers)
+                            query_string=params_filtered, headers=headers)
     assert r_filtered.status_code == 200
-    assert r_filtered.json.keys() == [u'projectCount', u'totalFileSize', u'donorCount',
-                             u'primarySiteCount', u'fileCount']
+    assert r_filtered.json.keys() == [u'projectCount', u'totalFileSize',
+                                      u'donorCount', u'primarySiteCount',
+                                      u'fileCount']
     for key in r.json.keys():
-       assert r.json[key] == r_filtered.json[key]
+        assert r.json[key] == r_filtered.json[key]
 
 
 def test_files_returns_ok(client, app):
@@ -288,10 +294,10 @@ def test_projects_returns_list_if_not_project_specified(client, app):
 
 def test_gene_project_donor_counts(client, app):
     headers = {'Authorization': _login_bearer_token(client, app)}
-    filters = {"mutation" : {"functionalImpact": {"is": "High"}}}
+    filters = {"mutation": {"functionalImpact": {"is": "High"}}}
     filters = urllib.quote_plus(json.dumps(filters))
     params = {'filters': filters}
-    r = client.get('/api/v1/ui/search/gene-project-donor-counts/ENSG00000005339??',
+    r = client.get('/api/v1/ui/search/gene-project-donor-counts/ENSG00000005339??',  # NOQA
                    query_string=params, headers=headers)  # NOQA
     assert r.status_code == 200
     assert r.json['ENSG00000005339']
