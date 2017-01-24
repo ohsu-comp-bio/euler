@@ -185,7 +185,7 @@ def get_genes():
     filter genes request
     """
     return dcc_proxy.get_genes('/api/v1/genes')
- 
+
 
 @app.route('/api/v1/genes/count',
            methods=['GET'])
@@ -205,13 +205,14 @@ def get_genesets_genes_counts(geneSetIds):
     return dcc_proxy.get_genesets_genes_counts('/api/v1/genesets', geneSetIds)
 
 
-@app.route('/api/v1/mutations', 
+@app.route('/api/v1/mutations',
            methods=['GET'])
 def get_mutations():
     """
     filter mutations request
     """
     return dcc_proxy.get_mutations('/api/v1/mutations')
+
 
 @app.route('/api/v1/download/info/<path:release>/Projects',
            methods=['GET'])
