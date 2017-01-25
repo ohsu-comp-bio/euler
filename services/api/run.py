@@ -202,8 +202,8 @@ def genes_mutations_counts(geneIds):
     """
     filter number of mutations on genes tab by project
     """
-    return dcc_proxy.get_genes_mutations_counts('/api/v1/genes/<path:geneIds>/mutations/counts', # "NOQA
-                                                geneIds) 
+    return dcc_proxy.get_genes_mutations_counts('/api/v1/genes/<path:geneIds>/mutations/counts',  # NOQA
+                                                geneIds)
 
 
 @app.route('/api/v1/genesets/<path:geneSetIds>/genes/counts',
