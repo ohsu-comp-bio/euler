@@ -231,8 +231,25 @@ def get_genes(url):
                                                       whitelist_projects)
     # unauthorized if project_codes not subset of whitelist
     _abort_if_unauthorized(project_codes, whitelist_projects)
-    # call PROXY_TARGET
-    return _call_proxy_target(params)
+    # call the remote
+    remote_response = requests.get(_remote_url(params))
+    # redact
+    d = remote_response.json()
+    if 'facets' in d and 'projectId' in d['facets']:
+        # redact project list
+        projects = d['facets']['projectId']
+        projects['terms'] = filter_(projects['terms'],
+                                    lambda term: term['term']
+                                    in whitelist_projects)
+        # re-aggregate fter redaction
+        if 'terms' in projects and len(projects['terms']) > 0:
+            projects['total'] = reduce_(pluck(projects['terms'], 'count'),
+                                        lambda total, count: total + count)
+    # formulate response with redacted projects and original content type
+    response = make_response(dumps(d))
+    response.headers['Content-Type'] = remote_response.headers['content-type']
+    response.status_code = remote_response.status_code
+    return response
 
 
 def get_genes_count(url):
@@ -243,6 +260,23 @@ def get_genes_count(url):
     params = _ensure_filters()
     # if no project_codes passed, set it to whitelist
     params, project_codes = _ensure_donor_project_ids(params,
+                                                      whitelist_projects)
+    # unauthorized if project_codes not subset of whitelist
+    _abort_if_unauthorized(project_codes, whitelist_projects)
+    # call PROXY_TARGET
+    return _call_proxy_target(params)
+
+
+def get_genes_mutations_counts(url, geneIds):
+    """
+    apply project filter to /api/v1/genes/<path:geneIds>/mutations/counts
+    """
+    # if no whitelist_projects, abort
+    whitelist_projects = _whitelist_projects(True)
+    # create mutable dict
+    params = _ensure_filters()
+    # if no project_codes are passed, set it to whitelist
+    params, project_codes = _ensure_donor_project_ids(params, 
                                                       whitelist_projects)
     # unauthorized if project_codes not subset of whitelist
     _abort_if_unauthorized(project_codes, whitelist_projects)
@@ -265,8 +299,6 @@ def get_genesets_genes_counts(url, geneSetIds):
     _abort_if_unauthorized(project_codes, whitelist_projects)
     # call the remote
     url = url + geneSetIds + '/genes/counts'
-    app.logger.debug("LOOK HERE")
-    app.logger.debug(url)
     remote_response = requests.get(_remote_url(params))
     d = remote_response.json()
     response = make_response(dumps(d))
@@ -283,6 +315,38 @@ def get_mutations(url):
     params = _ensure_filters()
     # if no project_codes passed, set it to whitelist
     params, project_codes = _ensure_donor_project_ids(params,
+                                                      whitelist_projects)
+    # unauthorized if project_codes not subset of whitelist
+    _abort_if_unauthorized(project_codes, whitelist_projects)
+    # call the remote
+    remote_response = requests.get(_remote_url(params))
+    # redact
+    d = remote_response.json()
+    if 'facets' in d and 'projectId' in d['facets']:
+        # redact project list
+        projects = d['facets']['projectId']
+        projects['terms'] = filter_(projects['terms'],
+                                    lambda term: term['term']
+                                    in whitelist_projects)
+        # re-aggregate fter redaction
+        if 'terms' in projects and len(projects['terms']) > 0:
+            projects['total'] = reduce_(pluck(projects['terms'], 'count'),
+                                        lambda total, count: total + count)
+    # formulate response with redacted projects and original content type
+    response = make_response(dumps(d))
+    response.headers['Content-Type'] = remote_response.headers['content-type']
+    response.status_code = remote_response.status_code
+    return response
+
+
+def get_occurrences(url):
+    """ apply project filter to occurrences request /api/v1/occurrences """
+    # if no whitelist_projects, abort
+    whitelist_projects = _whitelist_projects(True)
+    # create mutable dict
+    params = _ensure_filters()
+    # if no project_codes passed, set it to whitelist
+    params, project_codes = _ensure_donor_project_ids(params, 
                                                       whitelist_projects)
     # unauthorized if project_codes not subset of whitelist
     _abort_if_unauthorized(project_codes, whitelist_projects)

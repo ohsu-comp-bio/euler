@@ -196,6 +196,16 @@ def genes_count():
     return dcc_proxy.get_genes_count('/api/v1/genes/count')
 
 
+@app.route('/api/v1/genes/<path:geneIds>/mutations/counts',
+           methods=['GET'])
+def genes_mutations_counts(geneIds):
+    """
+    filter number of mutations on genes tab by project
+    """
+    return dcc_proxy.get_genes_mutations_counts('/api/v1/genes/<path:geneIds>/mutations/counts', # "NOQA
+                                                geneIds) 
+
+
 @app.route('/api/v1/genesets/<path:geneSetIds>/genes/counts',
            methods=['GET'])
 def get_genesets_genes_counts(geneSetIds):
@@ -212,6 +222,15 @@ def get_mutations():
     filter mutations request
     """
     return dcc_proxy.get_mutations('/api/v1/mutations')
+
+
+@app.route('/api/v1/occurrences',
+           methods=['GET'])
+def get_occurrences():
+    """
+    filter occurrences request
+    """
+    return dcc_proxy.get_occurrences('/api/v1/occurrences')
 
 
 @app.route('/api/v1/download/info/<path:release>/Projects',
