@@ -109,6 +109,14 @@ def verify():
                    )
 
 
+@app.route('/api/v1/analysis/enrichment', methods=['POST'])
+def post_analysis_enrichment():
+    """
+    post to /api/v1/analysis/enrichment
+    """
+    return dcc_proxy.post_analysis_enrichment()
+
+
 @app.route('/api/v1/repository/files', methods=['GET'])
 def get_files():
     """

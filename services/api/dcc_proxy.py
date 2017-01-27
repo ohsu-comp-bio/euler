@@ -53,6 +53,21 @@ def post_any(url):
                     status=req.status_code)
 
 
+def post_analysis_enrichment():
+    """ post to /analysis/enrichment """
+    remote_url = _remote_url()
+    headers = {'Accept': 'application/json',
+               'Content-Type': 'application/x-www-form-urlencoded'}
+    app.logger.debug(request.form)
+    req = requests.post(remote_url, stream=True,
+                        data=request.form, headers=headers,
+                        allow_redirects=True)
+    app.logger.debug('POST {} {}'.format(remote_url, req.status_code))
+    return Response(stream_with_context(req.iter_content()),
+                    content_type=req.headers['content-type'],
+                    status=req.status_code)
+
+
 def get_projects(url):
     """ apply project filter to files request /api/v1/projects"""
     # if no whitelist_projects, don't abort
@@ -231,25 +246,8 @@ def get_genes(url):
                                                       whitelist_projects)
     # unauthorized if project_codes not subset of whitelist
     _abort_if_unauthorized(project_codes, whitelist_projects)
-    # call the remote
-    remote_response = requests.get(_remote_url(params))
-    # redact
-    d = remote_response.json()
-    if 'facets' in d and 'projectId' in d['facets']:
-        # redact project list
-        projects = d['facets']['projectId']
-        projects['terms'] = filter_(projects['terms'],
-                                    lambda term: term['term']
-                                    in whitelist_projects)
-        # re-aggregate fter redaction
-        if 'terms' in projects and len(projects['terms']) > 0:
-            projects['total'] = reduce_(pluck(projects['terms'], 'count'),
-                                        lambda total, count: total + count)
-    # formulate response with redacted projects and original content type
-    response = make_response(dumps(d))
-    response.headers['Content-Type'] = remote_response.headers['content-type']
-    response.status_code = remote_response.status_code
-    return response
+    # call PROXY_TARGET
+    return _call_proxy_target(params)
 
 
 def get_genes_count(url):
@@ -276,7 +274,7 @@ def get_genes_mutations_counts(url, geneIds):
     # create mutable dict
     params = _ensure_filters()
     # if no project_codes are passed, set it to whitelist
-    params, project_codes = _ensure_donor_project_ids(params, 
+    params, project_codes = _ensure_donor_project_ids(params,
                                                       whitelist_projects)
     # unauthorized if project_codes not subset of whitelist
     _abort_if_unauthorized(project_codes, whitelist_projects)
@@ -318,25 +316,8 @@ def get_mutations(url):
                                                       whitelist_projects)
     # unauthorized if project_codes not subset of whitelist
     _abort_if_unauthorized(project_codes, whitelist_projects)
-    # call the remote
-    remote_response = requests.get(_remote_url(params))
-    # redact
-    d = remote_response.json()
-    if 'facets' in d and 'projectId' in d['facets']:
-        # redact project list
-        projects = d['facets']['projectId']
-        projects['terms'] = filter_(projects['terms'],
-                                    lambda term: term['term']
-                                    in whitelist_projects)
-        # re-aggregate fter redaction
-        if 'terms' in projects and len(projects['terms']) > 0:
-            projects['total'] = reduce_(pluck(projects['terms'], 'count'),
-                                        lambda total, count: total + count)
-    # formulate response with redacted projects and original content type
-    response = make_response(dumps(d))
-    response.headers['Content-Type'] = remote_response.headers['content-type']
-    response.status_code = remote_response.status_code
-    return response
+    # call PROXY_TARGET
+    return _call_proxy_target(params)
 
 
 def get_occurrences(url):
@@ -346,7 +327,7 @@ def get_occurrences(url):
     # create mutable dict
     params = _ensure_filters()
     # if no project_codes passed, set it to whitelist
-    params, project_codes = _ensure_donor_project_ids(params, 
+    params, project_codes = _ensure_donor_project_ids(params,
                                                       whitelist_projects)
     # unauthorized if project_codes not subset of whitelist
     _abort_if_unauthorized(project_codes, whitelist_projects)
