@@ -8,6 +8,8 @@ import json
 # assumes OS_USERNAME has access to only one project
 MY_PROJECT = 'BRCA-UK'
 MY_GENESET = 'GS1'
+MY_GENE = 'ENSG00000141510'
+
 
 def test_should_logout_ok(client, app):
     """
@@ -63,6 +65,42 @@ def test_redact_download_info(client, app):
         assert MY_PROJECT in dir['name'] or 'README' in dir['name']
 
 
+def test_post_analysis_enrichment(client, app):
+    """
+    should respond with ok and response from dcc
+    """
+    headers = {'Authorization': _login_bearer_token(client, app),
+               'Accept': 'application/json',
+               'Content-Type': 'application/x-www-form-urlencoded'}
+    form = dict([('sort', u'affectedDonorCountFiltered'),
+                 ('params', u'{"maxGeneSetCount":50,"fdr":0.05,"universe":"REACTOME_PATHWAYS","maxGeneCount":50}'),  # NOQA
+                 ('order', u'DESC'),
+                 ('filters', u'{"gene":{"id":{"is":["ES:2d097244-2aac-4ae5-a428-7bff28adad46"]}}}')])  # NOQA
+    r = client.post('/api/v1/analysis/enrichment', headers=headers,
+                    data=form)
+    assert r.status_code == 202
+
+
+def test_post_analysis_enrichment_no_data(client, app):
+    """
+    should respond with ok and response from dcc
+    """
+    headers = {'Authorization': _login_bearer_token(client, app),
+               'Accept': 'application/json',
+               'Content-Type': 'application/x-www-form-urlencoded'}
+    r = client.post('/api/v1/analysis/enrichment', headers=headers)
+    assert r.status_code == 400
+
+
+def test_post_analysis_enrichment_no_header(client, app):
+    """
+    should respond with ok and response from dcc
+    """
+    headers = {'Authorization': _login_bearer_token(client, app)}
+    r = client.post('/api/v1/analysis/enrichment', headers=headers)
+    assert r.status_code == 400
+
+
 def test_donors_returns_ok(client, app):
     """
     should respond with ok and response from dcc, with MY_PROJECT in results
@@ -88,8 +126,9 @@ def test_genes_returns_ok(client, app):
     params = {'from': 1, 'include': 'facets', 'size': 25}
     filters = {"donor": {"projectId": {"is": ["BRCA-UK"]}}}
     filters = urllib.quote_plus(json.dumps(filters))
-    params_filtered = {'from': 1, 'include': 'facets', 'size': 25, 'filters': filters}
-    r = client.get('/api/v1/genes', 
+    params_filtered = {'from': 1, 'include': 'facets', 'size': 25,
+                       'filters': filters}
+    r = client.get('/api/v1/genes',
                    query_string=params, headers=headers)
     assert r.status_code == 200
     assert r.json.keys() == [u'pagination', u'hits', u'facets']
@@ -98,9 +137,6 @@ def test_genes_returns_ok(client, app):
     assert r_filtered.status_code == 200
     for i in range(len(r.json['hits'])):
         assert r.json['hits'][i] == r_filtered.json['hits'][i]
-    if 'projectId' in r.json['facets']:
-        for term in r.json['facets']['projectId']['terms']:
-            assert term['term'] == MY_PROJECT
 
 
 def test_genes_count_returns_ok(client, app):
@@ -111,7 +147,8 @@ def test_genes_count_returns_ok(client, app):
     filters = {"gene": {"hasPathway": 'true'}}
     filters = urllib.quote_plus(json.dumps(filters))
     params = {'filters': filters}
-    filters = {"gene": {"hasPathway": 'true'}, "donor": {"projectId": {"is": ["BRCA-UK"]}}}
+    filters = {"gene": {"hasPathway": 'true'},
+               "donor": {"projectId": {"is": [MY_PROJECT]}}}
     filters = urllib.quote_plus(json.dumps(filters))
     params_filtered = {'filters': filters}
     r = client.get('/api/v1/genes/count',
@@ -123,6 +160,27 @@ def test_genes_count_returns_ok(client, app):
     assert r_filtered.status_code == 200
     r_filtered = int(r_filtered.json)
     assert r == r_filtered
+
+
+def test_genes_mutations_counts(client, app):
+    """
+    should respond with ok and response from dcc, with MY_PROJECT in results
+    """
+    headers = {'Authorization': _login_bearer_token(client, app)}
+    filters = {}
+    filters = urllib.quote_plus(json.dumps(filters))
+    params = {'filters': filters}
+    filters = {"donor": {"projectId": {"is": [MY_PROJECT]}}}
+    filters = urllib.quote_plus(json.dumps(filters))
+    params_filtered = {'filters': filters}
+    r = client.get('/api/v1/genes/{}/mutations/counts'.format(MY_GENE),
+                   query_string=params, headers=headers)
+    assert r.status_code == 200
+    r_json = r.json
+    r_filtered = client.get('/api/v1/genes/{}/mutations/counts'.format(MY_GENE),  # NOQA
+                            query_string=params_filtered, headers=headers)
+    assert r_filtered.status_code == 200
+    assert r_json == r_filtered.json
 
 
 def test_genesets_genes_counts(client, app):
@@ -147,7 +205,8 @@ def test_mutations_returns_ok(client, app):
     params = {'from': 1, 'include': 'facets', 'size': 25}
     filters = {"donor": {"projectId": {"is": ["BRCA-UK"]}}}
     filters = urllib.quote_plus(json.dumps(filters))
-    params_filtered = {'from': 1, 'include': 'facets', 'size': 25, 'filters': filters}
+    params_filtered = {'from': 1, 'include': 'facets', 'size': 25,
+                       'filters': filters}
     r = client.get('/api/v1/mutations',
                    query_string=params, headers=headers)
     assert r.status_code == 200
@@ -157,9 +216,27 @@ def test_mutations_returns_ok(client, app):
     assert r_filtered.status_code == 200
     for i in range(len(r.json['hits'])):
         assert r.json['hits'][i] == r_filtered.json['hits'][i]
-    if 'projectId' in r.json['facets']:
-        for term in r.json['facets']['projectId']['terms']:
-            assert term['term'] == MY_PROJECT
+
+
+def test_occurrences(client, app):
+    """
+    should respond with ok and response from dcc, with MY_PROJECT in results
+    """
+    headers = {'Authorization': _login_bearer_token(client, app)}
+    filters = {}
+    filters = urllib.quote_plus(json.dumps(filters))
+    params = {'filters': filters}
+    filters = {"donor": {"projectId": {"is": [MY_PROJECT]}}}
+    filters = urllib.quote_plus(json.dumps(filters))
+    params_filtered = {'filters': filters}
+    r = client.get('/api/v1/occurrences',
+                   query_string=params, headers=headers)
+    assert r.status_code == 200
+    r_json = r.json
+    r_filtered = client.get('/api/v1/occurrences',
+                            query_string=params_filtered, headers=headers)
+    assert r_filtered.status_code == 200
+    assert r_json == r_filtered.json
 
 
 def test_donors_facets_only_ok(client, app):
@@ -193,19 +270,21 @@ def test_files_summary(client, app):
     filters = {"file": {"projectCode": {"is": ["BRCA-UK"]}}}
     filters = urllib.quote_plus(json.dumps(filters))
     params = {'from': 1, 'include': 'facets', 'size': 25}
-    params_filtered = {'filters': filters, 'from': 1, 'include': 'facets', 'size': 25}
+    params_filtered = {'filters': filters, 'from': 1, 'include': 'facets',
+                       'size': 25}
     r = client.get('/api/v1/repository/files/summary',
                    query_string=params, headers=headers)
     assert r.status_code == 200
-    assert r.json.keys() == [u'projectCount', u'totalFileSize', u'donorCount', 
+    assert r.json.keys() == [u'projectCount', u'totalFileSize', u'donorCount',
                              u'primarySiteCount', u'fileCount']
     r_filtered = client.get('/api/v1/repository/files/summary',
-                   query_string=params_filtered, headers=headers)
+                            query_string=params_filtered, headers=headers)
     assert r_filtered.status_code == 200
-    assert r_filtered.json.keys() == [u'projectCount', u'totalFileSize', u'donorCount',
-                             u'primarySiteCount', u'fileCount']
+    assert r_filtered.json.keys() == [u'projectCount', u'totalFileSize',
+                                      u'donorCount', u'primarySiteCount',
+                                      u'fileCount']
     for key in r.json.keys():
-       assert r.json[key] == r_filtered.json[key]
+        assert r.json[key] == r_filtered.json[key]
 
 
 def test_files_returns_ok(client, app):
@@ -288,7 +367,11 @@ def test_projects_returns_list_if_not_project_specified(client, app):
 
 def test_gene_project_donor_counts(client, app):
     headers = {'Authorization': _login_bearer_token(client, app)}
-    r = client.get('/api/v1/ui/search/gene-project-donor-counts/ENSG00000005339??filters=%7B%22mutation%22:%7B%22functionalImpact%22:%7B%22is%22:%5B%22High%22%5D%7D%7D%7D', headers=headers)  # NOQA
+    filters = {"mutation": {"functionalImpact": {"is": "High"}}}
+    filters = urllib.quote_plus(json.dumps(filters))
+    params = {'filters': filters}
+    r = client.get('/api/v1/ui/search/gene-project-donor-counts/ENSG00000005339??',  # NOQA
+                   query_string=params, headers=headers)  # NOQA
     assert r.status_code == 200
     assert r.json['ENSG00000005339']
     assert r.json['ENSG00000005339']['terms'][0]['term'] == MY_PROJECT

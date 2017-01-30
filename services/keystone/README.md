@@ -38,7 +38,12 @@ os  domain  create forumsys
 os  domain  create ohsu
 os  domain  create testing
 # Restart the OpenStack Identity service.....
+```
 
+Now `$ exit` out of the keystone container, `docker stop` the container, and restart it with the original `docker-compose up -d`. 
+Don't worry, the compose provisions a volume where keystone will store the domains just created. You won't lose work by just stopping and starting the container. 
+
+```
 # re-login when it comes up
 os  domain  list
 # log should display forumsys & ohsu
@@ -60,9 +65,17 @@ os  project  create  DLBC-US  --parent ccc
 os  role create member
 
 # add user
+
 os role add --project ccc --user <any ohsu user> --user-domain ohsu  member
 os role add --project baml --user <any ohsu user> --user-domain ohsu  member
+```
 
+Failure to stop and restart the container may result in errors connecting to the ldap domains you just created, e.g.
+```
+No user with a name or ID of '<your-user-name>' exists.
+```
+
+```
 # create test users
 os  domain  create testing
 os user create --password password  --domain testing brca_user
