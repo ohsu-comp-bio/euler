@@ -6,6 +6,29 @@ services:
   # see https://docs.docker.com/compose/compose-file/#/extrahosts
   api:
     extra_hosts:
-     - "mongo:${MONGO_HOST_IP}"
-     - "elastic:${ELASTIC_HOST_IP}"
+#     - "mongo:${MONGO_HOST_IP}"
+#     - "elastic:${ELASTIC_HOST_IP}"
      - "controller:${KEYSTONE_HOST_IP}"
+
+
+  swift:
+    container_name: swift
+    build:
+      context: services/swift/
+    ports:
+      - "8080:8080"
+    volumes_from:
+      - swift_data
+    links:
+      - api
+    environment:
+      - EULER_API_URL=${EULER_API_URL}
+    extra_hosts:
+      - "controller:${KEYSTONE_HOST_IP}"
+
+  swift_data:
+    container_name: swift_data
+    image: busybox
+    volumes:
+        - /srv
+    entrypoint: tail -f /dev/null
