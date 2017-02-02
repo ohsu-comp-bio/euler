@@ -110,6 +110,20 @@ def test_projects_from_token(client, app):
     assert user
 
 
+def test_projects_from_cookie(client, app):
+    id_token = _development_login(client, app)
+    # save current auth, and ensure test_authenticator used for this test
+    old_auth = app.auth
+    app.auth = BearerAuth()
+    request = MockRequest()
+    request.cookies['id_token'] = id_token
+    projects = app.auth.projects(request=request)
+    user = app.auth.get_user(request=request)
+    app.auth = old_auth
+    assert len(projects) > 0
+    assert user
+
+
 def test_authenticate_with_openstack_header(client, app):
     # save current auth, and ensure test_authenticator used for this test
     old_auth = app.auth
@@ -130,19 +144,13 @@ def test_authenticate_with_openstack_header(client, app):
 
 
 def test_projects_from_unauthorized_token(client, app):
-    # save current auth, and ensure test_authenticator used for this test
-    old_auth = app.auth
-    app.auth = BearerAuth()
-    request = {'headers': []}
-
-    class MockRequest:
-        headers = {}
-
+    # no auth should have no projects
     request = MockRequest()
     projects = app.auth.projects(request=request)
-    app.auth = old_auth
     assert len(projects) == 0
 
 
 class MockRequest:
-    headers = {}
+    def __init__(self):
+        self.headers = {}
+        self.cookies = {}

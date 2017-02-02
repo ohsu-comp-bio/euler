@@ -69,6 +69,10 @@ class BearerAuth(TokenAuth):
                 fetch_roles=True
             )
             return self._map_profile(token_info, role_assignments)
+        # was a cookie set?
+        if 'id_token' in request.cookies:
+            id_dict = self.parse_token(request.cookies.get('id_token'))
+            return id_dict
         return None
 
     def get_user(self, request):
@@ -115,7 +119,6 @@ class BearerAuth(TokenAuth):
     def _find_projects(self, token=None):
         """ given a token, return project names """
         if not token:
-            # app.logger.debug('_find_projects no token, default')
             return []
         return deep_pluck(token['roles'], 'scope.project')
 

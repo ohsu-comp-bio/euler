@@ -44,14 +44,19 @@ def _development_logout():
 
 @app.route('/api/v1/ohsulogin', methods=['POST'])
 def _api_login():
-    """login via json"""
+    """Login via json, return token and set cookie.
+       The client can use the token for 'Authorization Bearer' header.
+       The cookie used for downstream <a href... /> link authorization.
+       """
     credentials = request.get_json(silent=True)
     try:
         id_token = app.auth.authenticate_user(
             user_domain_name=credentials['domain'],
             username=credentials['user'],
             password=credentials['password'])
-        return jsonify({'id_token': id_token})
+        resp = jsonify({'id_token': id_token})
+        resp.set_cookie('id_token', id_token)
+        return resp
     except Exception as e:
         return Response('Invalid domain/user/password',
                         401, {'message':
