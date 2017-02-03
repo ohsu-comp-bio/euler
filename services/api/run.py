@@ -255,6 +255,15 @@ def get_download_info_projects(release):
     return dcc_proxy.get_download_info_projects(release)
 
 
+@app.route('/api/v1/manifests',
+           methods=['GET'])
+def get_manifests():
+    """
+    intercept manifest request
+    """
+    return dcc_proxy.get_manifests()
+
+
 @app.route('/api/<path:url>', methods=['GET'])
 def get_any(url):
     """

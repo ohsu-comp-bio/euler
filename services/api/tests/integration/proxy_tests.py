@@ -405,6 +405,20 @@ def test_projects_genes_bad_project(client, app):
     assert r.status_code == 401
 
 
+def test_get_manifests(client, app):
+    headers = {'Authorization': _login_bearer_token(client, app)}
+    url = '/api/v1/manifests?repos=collaboratory&format=tarball&filters={"file":{"id":{"is":"FI661960"}}}'  # NOQA
+    r = client.get(url, headers=headers)  # NOQA
+    assert r.status_code == 200
+
+
+def test_get_manifests_exacloud(client, app):
+    headers = {'Authorization': _login_bearer_token(client, app)}
+    url = '/api/v1/manifests?repos=exacloud&format=tarball&filters={"file":{"id":{"is":"FI661960"}}}'  # NOQA
+    r = client.get(url, headers=headers)
+    assert r.status_code == 200
+
+
 def _login_bearer_token(client, app):
     global global_id_token
     return 'Bearer {}'.format(global_id_token)

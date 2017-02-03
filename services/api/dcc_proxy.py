@@ -4,7 +4,7 @@
 Proxy front end to the dcc server
 """
 import os
-from flask import request, Response, abort, make_response
+from flask import request, Response, abort, make_response, jsonify
 from flask import current_app as app
 from flask import stream_with_context
 import requests
@@ -66,6 +66,19 @@ def post_analysis_enrichment():
     return Response(stream_with_context(req.iter_content()),
                     content_type=req.headers['content-type'],
                     status=req.status_code)
+
+
+def get_manifests():
+    """ intercept exacloud repository, otherwise, pass to target """
+    # must have project access
+    # whitelist_projects = _whitelist_projects(True)
+    _whitelist_projects(True)
+    # create mutable dict
+    params = _ensure_filters()
+    if 'repos' in params and 'exacloud' in params.get('repos'):
+        return jsonify({'todo': 'call ES and generate manifest'})
+    # call PROXY_TARGET
+    return _call_proxy_target(params)
 
 
 def get_projects(url):
