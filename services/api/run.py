@@ -37,9 +37,11 @@ app = _configure_app()
 @app.route('/api/v1/auth/logout', methods=['POST'])
 def _development_logout():
     """stub manual logout"""
-    return jsonify(
+    resp = jsonify(
         {'message': 'user logged out'}
     )
+    resp.set_cookie('id_token', expires=0)
+    return resp
 
 
 @app.route('/api/v1/ohsulogin', methods=['POST'])
