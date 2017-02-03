@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# set default scp parameters
+# override by setting prior to calling this script
+USER_NAME=${USER_NAME-$USER}
+REMOTE_HOST=${REMOTE_HOST-exacloud}
+LOCAL_DIRECTORY=${LOCAL_DIRECTORY-$(pwd)}
+SCP_OPTS=${SCP_OPTS-""}
+
+# download all files
+{% for path in paths %}
+scp $SCP_OPTS $USER_NAME@$REMOTE_HOST:{{path}} $LOCAL_DIRECTORY
+{% endfor %}

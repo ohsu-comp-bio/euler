@@ -408,15 +408,37 @@ def test_projects_genes_bad_project(client, app):
 def test_get_manifests(client, app):
     headers = {'Authorization': _login_bearer_token(client, app)}
     url = '/api/v1/manifests?repos=collaboratory&format=tarball&filters={"file":{"id":{"is":"FI661960"}}}'  # NOQA
-    r = client.get(url, headers=headers)  # NOQA
+    r = client.get(url, headers=headers)
     assert r.status_code == 200
 
 
 def test_get_manifests_exacloud(client, app):
     headers = {'Authorization': _login_bearer_token(client, app)}
+    # this file is actually in the BRCA repo,
+    # (since the test user has access to that dir)
+    # we've overridden the repo to force an exacloud response
     url = '/api/v1/manifests?repos=exacloud&format=tarball&filters={"file":{"id":{"is":"FI661960"}}}'  # NOQA
     r = client.get(url, headers=headers)
     assert r.status_code == 200
+    # should only have one file
+    assert r.data.count('scp $SCP_OPTS') == 1
+
+
+def test_get_manifests_exacloud_nofind(client, app):
+    headers = {'Authorization': _login_bearer_token(client, app)}
+    # this file is actually in the BRCA repo,
+    # (since the test user has access to that dir)
+    # we've overridden the repo to force an exacloud response
+    url = '/api/v1/manifests?repos=exacloud&format=tarball&filters={"file":{"id":{"is":"DUMMYFILEID"}}}'  # NOQA
+    r = client.get(url, headers=headers)
+    assert r.status_code == 400
+
+
+def test_get_manifests_noauth(client, app):
+    headers = {}
+    url = '/api/v1/manifests?repos=collaboratory&format=tarball&filters={"file":{"id":{"is":"FI661960"}}}'  # NOQA
+    r = client.get(url, headers=headers)
+    assert r.status_code == 401
 
 
 def _login_bearer_token(client, app):
