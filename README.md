@@ -71,6 +71,9 @@ CERT_DIR_PATH=... full path name to directory containing .cer & .key
 KEY_PATH=/certs/full-name.key
 CERT_PATH=/certs/full-name.cer
 
+# External keystone
+KEYSTONE_HOST_IP=...location of your keystone implementation...
+
 ```
 
 Initialize dcc submodule
@@ -97,6 +100,15 @@ We use [docker compose extends](https://docs.docker.com/compose/extends/) in add
 * For qa, staging, and production environments, the `docker-compose-deploy.yml` would be used to configure heavyweight services outside of  docker-compose.  Use it insead of docker-compose-*.yml.
 
 * For development tasks, a docker-compose-development.yml file is provided to provide elastic, mongo, etc.
+
+## to implement external keystone
+* ```cd services/keystone
+bash docker-build-single.sh
+bash docker-run-single.sh
+cd ../..
+docker-compose -f docker-compose.yml -f docker-compose-deploy.yml -f docker-compose-dcc.yml up```
+* configure [keystone](services/keystone/README.md)
+* configure [swift](services/swift/README.md)
 
 ## potentially useful aliases
 
