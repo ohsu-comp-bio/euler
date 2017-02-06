@@ -38,7 +38,7 @@ def create(params, PROXY_TARGET, _check_projects):
         for fileCopy in hit['fileCopies']:
             # if fileCopy['repoCode'] == 'exacloud':
             paths.append(fileCopy['fileName'])
-    # ensure project access
+    # ensure project authorization
     _check_projects(set(project_codes))
 
     template = app.jinja_env.get_template('exacloud_manifest.txt')
@@ -46,5 +46,5 @@ def create(params, PROXY_TARGET, _check_projects):
     strIO.write(str(template.render(paths=set(paths))))
     strIO.seek(0)
     return send_file(strIO,
-                     attachment_filename="manifest.sh",
+                     attachment_filename="exacloud_manifest.sh",
                      as_attachment=True)
