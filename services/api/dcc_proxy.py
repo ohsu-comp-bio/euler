@@ -11,6 +11,7 @@ import requests
 import urllib
 from pydash import deep_set, deep_get, filter_, reduce_, pluck
 from json import loads, dumps
+import manifest
 
 assert 'PROXY_TARGET' in os.environ
 PROXY_TARGET = os.environ['PROXY_TARGET']
@@ -66,6 +67,22 @@ def post_analysis_enrichment():
     return Response(stream_with_context(req.iter_content()),
                     content_type=req.headers['content-type'],
                     status=req.status_code)
+
+
+def get_manifests():
+    """ intercept exacloud repository, otherwise, pass to target """
+    # create mutable dict
+    params = _ensure_filters()
+    # if this is exacloud, we create manifest
+    if 'repos' in params and 'exacloud' in params.get('repos'):
+        # must have project access
+        def _check_projects(project_codes):
+            whitelist_projects = _whitelist_projects(True)
+            _abort_if_unauthorized(project_codes, whitelist_projects)
+        return manifest.create(params, PROXY_TARGET, _check_projects)
+    # otherwise, call PROXY_TARGET
+    _whitelist_projects(True)
+    return _call_proxy_target(params)
 
 
 def get_projects(url):

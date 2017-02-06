@@ -37,21 +37,28 @@ app = _configure_app()
 @app.route('/api/v1/auth/logout', methods=['POST'])
 def _development_logout():
     """stub manual logout"""
-    return jsonify(
+    resp = jsonify(
         {'message': 'user logged out'}
     )
+    resp.set_cookie('id_token', expires=0)
+    return resp
 
 
 @app.route('/api/v1/ohsulogin', methods=['POST'])
 def _api_login():
-    """login via json"""
+    """Login via json, return token and set cookie.
+       The client can use the token for 'Authorization Bearer' header.
+       The cookie used for downstream <a href... /> link authorization.
+       """
     credentials = request.get_json(silent=True)
     try:
         id_token = app.auth.authenticate_user(
             user_domain_name=credentials['domain'],
             username=credentials['user'],
             password=credentials['password'])
-        return jsonify({'id_token': id_token})
+        resp = jsonify({'id_token': id_token})
+        resp.set_cookie('id_token', id_token)
+        return resp
     except Exception as e:
         return Response('Invalid domain/user/password',
                         401, {'message':
@@ -248,6 +255,15 @@ def get_download_info_projects(release):
     redact download info request
     """
     return dcc_proxy.get_download_info_projects(release)
+
+
+@app.route('/api/v1/manifests',
+           methods=['GET'])
+def get_manifests():
+    """
+    intercept manifest request
+    """
+    return dcc_proxy.get_manifests()
 
 
 @app.route('/api/<path:url>', methods=['GET'])
