@@ -2,15 +2,28 @@
 version: '2.1'
 services:
 
-  # run branded OHSU-branded DCC portal
+  api:
+    links:
+      - server:server
+      - portal:portal
+
+  # run DCC-portal-server
+  server:
+    container_name: server
+    build:
+      context: services/server
+    ports:
+      - "${SERVER_PORT}:${SERVER_PORT}"
+    volumes:
+      - "./.resource_data:/resource"
+
+  # run branded OHSU-branded DCC-portal-ui
   portal:
     container_name: portal
     build:
       context: services/dcc-portal
     ports:
       - "${PORTAL_PORT}:${PORTAL_PORT}"
-    links:
-      - api
     volumes:
       - "${CERT_DIR_PATH}:/certs/"
     environment:
