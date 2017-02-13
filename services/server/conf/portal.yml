@@ -76,7 +76,7 @@ elastic:
   indexName: icgc-release
   repoIndexName: icgc-repository
   nodeAddresses:
-    - host: "10.60.60.161"
+    - host: "10.96.11.132"
       port: 9300
 
   # List of TransportClient settings.

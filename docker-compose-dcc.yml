@@ -24,6 +24,8 @@ services:
       context: services/dcc-portal
     ports:
       - "${PORTAL_PORT}:${PORTAL_PORT}"
+      - 9200:9200
+      - 9300:9300
     volumes:
       - "${CERT_DIR_PATH}:/certs/"
     environment:

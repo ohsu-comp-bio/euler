@@ -18,10 +18,13 @@ RUN \
   rm ${DCC_HOME}/dcc-portal-server/bin/dcc-portal-server.bak
 COPY conf/portal.yml ${DCC_HOME}/dcc-portal-server/conf/application.yml
 
-RUN ls
-
 WORKDIR $DCC_HOME/dcc-portal-server
 
-RUN ls
+#RUN sed -i.bak -e 's|^exit 0$||' bin/dcc-portal-server
+#RUN sed -i.bak s/wrapper.daemonize=TRUE/wrapper.daemonize=FALSE/ bin/dcc-portal-server
 
-CMD java -jar lib/dcc-portal-server.jar --spring.profiles.active=ohsu-dev --spring.config.location=conf/application.yml
+RUN cat conf/wrapper.conf
+
+EXPOSE 9000 9200 9300
+#CMD bin/dcc-portal-server start
+CMD java -jar lib/dcc-portal-server.jar --spring.profiles.active=ohsu-dev --spring.config.location=conf/
