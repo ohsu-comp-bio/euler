@@ -1,30 +1,25 @@
-FROM java:8-jdk
+FROM java:8-jre
 
-RUN mkdir /dcc
+ENV DCC_HOME /opt/dcc
+RUN useradd -m dcc &&  mkdir -p $DCC_HOME
 
 ENV RELEASE=4.3.27
-ENV DCC_HOME=/dcc
 
 WORKDIR $DCC_HOME
 
-ADD https://artifacts.oicr.on.ca/artifactory/dcc-release/org/icgc/dcc/dcc-portal-server/${RELEASE}/dcc-portal-server-${RELEASE}-dist.tar.gz ${DCC_HOME}/dcc-portal.tar.gz
-RUN \
-  tar xf dcc-portal.tar.gz && \
-  rm dcc-portal.tar.gz && \
-  mv dcc-portal-server-* dcc-portal-server && \
-  sed -i.bak s/spring.profiles.active=.*$/spring.profiles.active=ohsu-dev/ ${DCC_HOME}/dcc-portal-server/conf/wrapper.conf && \
-  rm ${DCC_HOME}/dcc-portal-server/conf/wrapper.conf.bak && \
-  sed -i.bak '2iunset MAIL' ${DCC_HOME}/dcc-portal-server/bin/dcc-portal-server && \
-  rm ${DCC_HOME}/dcc-portal-server/bin/dcc-portal-server.bak
-COPY conf/portal.yml ${DCC_HOME}/dcc-portal-server/conf/application.yml
+ADD https://artifacts.oicr.on.ca/artifactory/dcc-release/org/icgc/dcc/dcc-portal-server/${RELEASE}/dcc-portal-server-${RELEASE}-dist.tar.gz $DCC_HOME
 
-WORKDIR $DCC_HOME/dcc-portal-server
+RUN tar xf dcc-portal-server-${RELEASE}-dist.tar.gz && \
+    rm dcc-portal-server-${RELEASE}-dist.tar.gz
 
-#RUN sed -i.bak -e 's|^exit 0$||' bin/dcc-portal-server
-#RUN sed -i.bak s/wrapper.daemonize=TRUE/wrapper.daemonize=FALSE/ bin/dcc-portal-server
+RUN sed -i.bak s/spring.profiles.active=.*$/spring.profiles.active=ohsu-dev/ ${DCC_HOME}/dcc-portal-server-${RELEASE}/conf/wrapper.conf
+RUN cat dcc-portal-server-${RELEASE}/conf/wrapper.conf
+COPY conf/portal.yml ${DCC_HOME}/dcc-portal-server-${RELEASE}/conf/application.yml
 
-RUN cat conf/wrapper.conf
+WORKDIR $DCC_HOME/dcc-portal-server-${RELEASE}
+
 
 EXPOSE 9000 9200 9300
-#CMD bin/dcc-portal-server start
-CMD java -jar lib/dcc-portal-server.jar --spring.profiles.active=ohsu-dev --spring.config.location=conf/
+CMD bin/dcc-portal-server start && tail -F logs/dcc-portal-server.log
+#CMD java -jar lib/dcc-portal-server.jar --spring.profiles.active=test --spring.config.location=conf/application.yml
+#CMD java -jar lib/dcc-portal-server.jar --spring.profiles.active=ohsu-dev --spring.config.location=conf/
