@@ -257,6 +257,15 @@ def get_download_info_projects(release):
     return dcc_proxy.get_download_info_projects(release)
 
 
+@app.route('/api/v1/download',
+           methods=['GET'])
+def get_download():
+    """
+    handle redirects
+    """
+    return dcc_proxy.get_download()
+
+
 @app.route('/api/v1/manifests',
            methods=['GET'])
 def get_manifests():

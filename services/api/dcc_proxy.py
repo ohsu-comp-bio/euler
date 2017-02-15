@@ -54,6 +54,20 @@ def post_any(url):
                     status=req.status_code)
 
 
+def get_download():
+    """ get the download redirect """
+    remote_url = _remote_url()
+    # if no whitelist_projects, abort
+    _whitelist_projects()
+    req = requests.get(remote_url, allow_redirects=False)
+    app.logger.debug('GET {} {}'.format(remote_url, req.status_code))
+    app.logger.debug('HEADERS {}'.format(req.headers))
+    # interesting example here ...
+    # see http://www.programcreek.com/python/example/58918
+    #        /flask.stream_with_context exec_query
+    return make_response(("", req.status_code, req.headers.items()))
+
+
 def post_analysis_enrichment():
     """ post to /analysis/enrichment """
     remote_url = _remote_url()
