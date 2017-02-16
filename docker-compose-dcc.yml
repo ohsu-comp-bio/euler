@@ -16,6 +16,28 @@ services:
     environment:
       - PORT=${PORTAL_PORT}
       - API_SOURCE=${API_URL}
-      - KEY_PATH=${KEY_PATH}
-      - CERT_PATH=${CERT_PATH}
+      # - KEY_PATH=${KEY_PATH}
+      # - CERT_PATH=${CERT_PATH}
       - NODE_ENV=development
+
+  # run nginx front end
+  nginx:
+    container_name: nginx
+    image: nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      - UI_URL=${UI_URL}
+      - API_URL=${API_URL}
+      - DOWNLOAD_URL=${DOWNLOAD_URL}
+    links:
+      - portal
+      - api
+    extra_hosts:
+     - "download:110.96.11.96"
+    volumes:
+      - "${CERT_DIR_PATH}:/certs/"
+      - "./services/nginx/default.conf.template:/etc/nginx/conf.d/default.conf.template"
+#    command: /bin/bash -c "envsubst '$API_URL $DOWNLOAD_URL $UI_URL' < /etc/nginx/conf.d/default.conf.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"
+    command: /bin/bash -c "envsubst '$${API_URL} $${DOWNLOAD_URL} $${UI_URL}' < /etc/nginx/conf.d/default.conf.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"
