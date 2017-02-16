@@ -62,9 +62,8 @@ def get_download():
     req = requests.get(remote_url, allow_redirects=False)
     app.logger.debug('GET {} {}'.format(remote_url, req.status_code))
     app.logger.debug('HEADERS {}'.format(req.headers))
-    # interesting example here ...
-    # see http://www.programcreek.com/python/example/58918
-    #        /flask.stream_with_context exec_query
+    req.headers['Location'] = req.headers['Location'].replace('localhost:9090', 'local.compbio.ohsu.edu')
+    req.headers['Location'] = req.headers['Location'].replace('http:', 'https:')
     return make_response(("", req.status_code, req.headers.items()))
 
 
