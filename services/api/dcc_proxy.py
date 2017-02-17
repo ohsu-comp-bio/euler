@@ -62,8 +62,11 @@ def get_download():
     req = requests.get(remote_url, allow_redirects=False)
     app.logger.debug('GET {} {}'.format(remote_url, req.status_code))
     app.logger.debug('HEADERS {}'.format(req.headers))
-    req.headers['Location'] = req.headers['Location'].replace('localhost:9090', 'local.compbio.ohsu.edu')
-    req.headers['Location'] = req.headers['Location'].replace('http:', 'https:')
+    # for testing without changes to portal-server
+    # req.headers['Location'] = req.headers['Location']
+    # .replace('localhost:9090', 'local.compbio.ohsu.edu')
+    # req.headers['Location'] = req.headers['Location']
+    #  .replace('http:', 'https:')
     return make_response(("", req.status_code, req.headers.items()))
 
 
