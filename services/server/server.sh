@@ -4,7 +4,7 @@ DCC_HOME=/opt/dcc
 mkdir -p $DCC_HOME
 cd $DCC_HOME
 
-ENV RELEASE=4.3.27
+RELEASE=4.3.27
 
 wget https://artifacts.oicr.on.ca/artifactory/dcc-release/org/icgc/dcc/dcc-portal-server/${RELEASE}/dcc-portal-server-${RELEASE}-dist.tar.gz $DCC_HOME
 tar xf dcc-portal-server-${RELEASE}-dist.tar.gz && \
