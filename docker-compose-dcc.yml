@@ -14,6 +14,8 @@ services:
       context: services/server
     ports:
       - "${SERVER_PORT}:${SERVER_PORT}"
+      - 9200:9200
+      - 9300:9300
     volumes:
       - "./.resource_data:/resource"
 
@@ -24,8 +26,6 @@ services:
       context: services/dcc-portal
     ports:
       - "${PORTAL_PORT}:${PORTAL_PORT}"
-      - 9200:9200
-      - 9300:9300
     volumes:
       - "${CERT_DIR_PATH}:/certs/"
     environment:
