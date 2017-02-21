@@ -58,15 +58,11 @@ def get_download():
     """ get the download redirect """
     remote_url = _remote_url()
     # if no whitelist_projects, abort
-    _whitelist_projects()
+    _whitelist_projects(True)
     req = requests.get(remote_url, allow_redirects=False)
-    app.logger.debug('GET {} {}'.format(remote_url, req.status_code))
-    app.logger.debug('HEADERS {}'.format(req.headers))
     # for testing without changes to portal-server
-    # req.headers['Location'] = req.headers['Location']
-    # .replace('localhost:9090', 'local.compbio.ohsu.edu')
-    # req.headers['Location'] = req.headers['Location']
-    #  .replace('http:', 'https:')
+    # req.headers['Location'] = req.headers['Location'].replace('localhost:9090', 'local.compbio.ohsu.edu')  # NOQA
+    # req.headers['Location'] = req.headers['Location'].replace('http:', 'https:')  # NOQA
     return make_response(("", req.status_code, req.headers.items()))
 
 
@@ -160,7 +156,24 @@ def get_files():
     # unauthorized if project_codes not subset of whitelist
     _abort_if_unauthorized(project_codes, whitelist_projects)
     # call PROXY_TARGET
-    return _call_proxy_target(params)
+    remote_response = requests.get(_remote_url(params))
+    # redact the response
+    app.logger.debug(dumps(remote_response.json()))
+    d = remote_response.json()
+    if (
+        'termFacets' in d and 'projectCode' in d['termFacets'] and
+        'terms' in d['termFacets']['projectCode']
+    ):
+        # redact project list
+        projects = d['termFacets']['projectCode']
+        projects['terms'] = filter_(projects['terms'],
+                                    lambda term: term['term']
+                                    in whitelist_projects)
+    # formulate response with redacted projects and original content type
+    response = make_response(dumps(d))
+    response.headers['Content-Type'] = remote_response.headers['content-type']
+    response.status_code = remote_response.status_code
+    return response
 
 
 def get_files_summary():
