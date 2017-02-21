@@ -9,6 +9,8 @@ import json
 MY_PROJECT = 'BRCA-UK'
 MY_GENESET = 'GS1'
 MY_GENE = 'ENSG00000141510'
+# this file needs to exist in BRCA-UK
+FILE_ID = "FIffb3540a357a4c23611364d4cafa5d57"  # "FI661960"
 
 
 def test_should_logout_ok(client, app):
@@ -299,9 +301,29 @@ def test_files_returns_ok(client, app):
                    query_string=params, headers=headers)
     assert r.status_code == 200
     assert r.json.keys() == [u'hits', u'termFacets', u'pagination']
+    app.logger.debug(r.json)
+    app.logger.debug(r.json['hits'])
     for hit in r.json['hits']:
         for donor in hit['donors']:
             assert donor['projectCode'] == MY_PROJECT
+    assert r.json.keys() == [u'hits', u'termFacets', u'pagination']
+
+
+def test_files_redacts_projects(client, app):
+    """
+    should respond with ok and response from dcc
+    """
+    headers = {'Authorization': _login_bearer_token(client, app)}
+    filters = {}
+    filters = urllib.quote_plus(json.dumps(filters))
+    params = {'filters': filters, 'from': 1, 'include': 'facets', 'size': 25}
+    r = client.get('/api/v1/repository/files',
+                   query_string=params, headers=headers)
+    assert r.status_code == 200
+    assert r.json.keys() == [u'hits', u'termFacets', u'pagination']
+    app.logger.debug(r.json['termFacets']['projectCode'])
+    for term in r.json['termFacets']['projectCode']['terms']:
+        assert term['term'] == MY_PROJECT
 
 
 def test_files_returns_unauthorized_for_no_token(client, app):
@@ -407,7 +429,7 @@ def test_projects_genes_bad_project(client, app):
 
 def test_get_manifests(client, app):
     headers = {'Authorization': _login_bearer_token(client, app)}
-    url = '/api/v1/manifests?repos=collaboratory&format=tarball&filters={"file":{"id":{"is":"FI661960"}}}'  # NOQA
+    url = '/api/v1/manifests?repos=collaboratory&format=tarball&filters={"file":{"id":{"is":"'+FILE_ID+'"}}}'  # NOQA
     r = client.get(url, headers=headers)
     assert r.status_code == 200
 
@@ -417,7 +439,7 @@ def test_get_manifests_exacloud(client, app):
     # this file is actually in the BRCA repo,
     # (since the test user has access to that dir)
     # we've overridden the repo to force an exacloud response
-    url = '/api/v1/manifests?repos=exacloud&format=tarball&filters={"file":{"id":{"is":"FI661960"}}}'  # NOQA
+    url = '/api/v1/manifests?repos=exacloud&format=tarball&filters={"file":{"id":{"is":"'+FILE_ID+'"}}}'  # NOQA
     r = client.get(url, headers=headers)
     assert r.status_code == 200
     # should only have one file
@@ -436,8 +458,22 @@ def test_get_manifests_exacloud_nofind(client, app):
 
 def test_get_manifests_noauth(client, app):
     headers = {}
-    url = '/api/v1/manifests?repos=collaboratory&format=tarball&filters={"file":{"id":{"is":"FI661960"}}}'  # NOQA
+    url = '/api/v1/manifests?repos=collaboratory&format=tarball&filters={"file":{"id":{"is":"'+FILE_ID+'"}}}'  # NOQA
     r = client.get(url, headers=headers)
+    assert r.status_code == 401
+
+
+def test_get_dowload(client, app):
+    headers = {'Authorization': _login_bearer_token(client, app)}
+    url = '/api/v1/download?fn=/README.txt'
+    r = client.get(url, headers=headers)
+    assert r.status_code == 307
+    assert r.headers['Location']
+
+
+def test_get_dowload_no_auth(client, app):
+    url = '/api/v1/download?fn=/README.txt'
+    r = client.get(url)
     assert r.status_code == 401
 
 
