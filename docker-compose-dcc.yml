@@ -4,20 +4,20 @@ services:
 
   api:
     links:
-      - server:server
+#      - server:server
       - portal:portal
 
-  # run DCC-portal-server
-  server:
-    container_name: server
-    build:
-      context: services/server
-    ports:
-      - "${SERVER_PORT}:${SERVER_PORT}"
-      - 9200:9200
-      - 9300:9300
-    volumes:
-      - "./.resource_data:/resource"
+#  # run DCC-portal-server
+#  server:
+#    container_name: server
+#    build:
+#      context: services/server
+#    ports:
+#      - "${SERVER_PORT}:${SERVER_PORT}"
+#      - 9200:9200
+#      - 9300:9300
+#    volumes:
+#      - "./.resource_data:/resource"
 
   # run branded OHSU-branded DCC-portal-ui
   portal:
