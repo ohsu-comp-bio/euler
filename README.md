@@ -74,6 +74,9 @@ CERT_PATH=/certs/full-name.cer
 # External keystone
 KEYSTONE_HOST_IP=...location of your keystone implementation...
 
+# If a user belongs to this meta-project, they
+# can see project wide summary files
+SUMMARY_PROJECT_NAME=DCC_SUMMARY
 ```
 
 Initialize dcc submodule
@@ -113,9 +116,10 @@ docker-compose -f docker-compose.yml -f docker-compose-deploy.yml -f docker-comp
 ## potentially useful aliases
 
 ```
-alias up="docker-compose -f docker-compose.yml  -f docker-compose-openstack.yml -f docker-compose-development.yml -f docker-compose-dcc.yml up"
-alias stop="docker-compose -f docker-compose.yml  -f docker-compose-openstack.yml -f docker-compose-development.yml -f docker-compose-dcc.yml stop"
-alias build="docker-compose -f docker-compose.yml  -f docker-compose-openstack.yml -f docker-compose-development.yml -f docker-compose-dcc.yml build"
+export EULER_COMPOSE="docker-compose -f docker-compose.yml  -f docker-compose-openstack.yml -f docker-compose-development.yml -f docker-compose-dcc.yml"
+alias up="$EULER_COMPOSE up"
+alias stop="$EULER_COMPOSE stop"
+alias build="$EULER_COMPOSE build"
 
 execfunction() {
     docker exec -it $1 bash

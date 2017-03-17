@@ -407,6 +407,24 @@ def get_download_info_projects(release):
     return response
 
 
+def get_download_info_current_summary(release):
+    """ get the download redirect """
+    # if no whitelist_projects, abort
+    whitelist_projects = _whitelist_projects(True)
+    summary_project = None
+    if "SUMMARY_PROJECT_NAME" in os.environ:
+        summary_project = os.environ["SUMMARY_PROJECT_NAME"]
+        _abort_if_unauthorized([summary_project], whitelist_projects)
+        # call PROXY_TARGET
+        return _call_proxy_target()
+    else:
+        na = [{'name': 'Not authorized', 'type': 'f', 'size': 0}]
+        response = make_response(dumps(na))
+        response.headers['Content-Type'] = 'application/json'
+        return response
+        # return _call_proxy_target()
+
+
 # Private util functions ########################################
 
 def _ensure_project_codes(params, whitelist_projects):

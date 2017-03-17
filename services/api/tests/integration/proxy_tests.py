@@ -4,6 +4,8 @@ Test proxy
 """
 import urllib
 import json
+import os
+# import pytest
 
 # assumes OS_USERNAME has access to only one project
 MY_PROJECT = 'BRCA-UK'
@@ -11,6 +13,28 @@ MY_GENESET = 'GS1'
 MY_GENE = 'ENSG00000141510'
 # this file needs to exist in BRCA-UK
 FILE_ID = "FIffb3540a357a4c23611364d4cafa5d57"  # "FI661960"
+
+
+def test_get_download_summary_ok(client, app):
+    """
+    should respond with ok /api/v1/download/info/current/Summary
+    """
+    headers = {'Authorization': _login_bearer_token(client, app),
+               'Content-Type': 'application/json'}
+    os.environ["SUMMARY_PROJECT_NAME"] = MY_PROJECT
+    r = client.get('/api/v1/download/info/current/Summary', headers=headers)
+    assert r.status_code == 200
+
+
+def test_get_download_summary_not_auth(client, app):
+    """
+    should respond with ok /api/v1/download/info/current/Summary
+    """
+    headers = {'Authorization': _login_bearer_token(client, app),
+               'Content-Type': 'application/json'}
+    os.environ["SUMMARY_PROJECT_NAME"] = 'FOOBAR'
+    r = client.get('/api/v1/download/info/current/Summary', headers=headers)
+    assert r.status_code == 401
 
 
 def test_should_logout_ok(client, app):
@@ -434,6 +458,7 @@ def test_get_manifests(client, app):
     assert r.status_code == 200
 
 
+# @pytest.mark.skip(reason="no way of currently testing this")
 def test_get_manifests_exacloud(client, app):
     headers = {'Authorization': _login_bearer_token(client, app)}
     # this file is actually in the BRCA repo,
