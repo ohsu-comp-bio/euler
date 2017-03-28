@@ -312,5 +312,5 @@ if __name__ == '__main__':  # pragma: no cover
     debug = 'API_DEBUG' in os.environ  # TODO does eve override?
     api_port = int(os.environ.get('API_PORT', '5000'))
     api_host = os.environ.get('API_TARGET', '0.0.0.0')
-    app.run(debug=debug, port=api_port, host=api_host)
+    app.run(debug=debug, port=api_port, host=api_host, threaded=True)
     # app.run(debug=debug, port=api_port)

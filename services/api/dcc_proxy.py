@@ -414,15 +414,16 @@ def get_download_info_current_summary(release):
     summary_project = None
     if "SUMMARY_PROJECT_NAME" in os.environ:
         summary_project = os.environ["SUMMARY_PROJECT_NAME"]
-        _abort_if_unauthorized([summary_project], whitelist_projects)
-        # call PROXY_TARGET
-        return _call_proxy_target()
-    else:
-        na = [{'name': 'Not authorized', 'type': 'f', 'size': 0}]
-        response = make_response(dumps(na))
-        response.headers['Content-Type'] = 'application/json'
-        return response
-        # return _call_proxy_target()
+        intersection = list(set([summary_project])
+                            .intersection(whitelist_projects))
+        if len(intersection) > 0:
+            # call PROXY_TARGET
+            return _call_proxy_target()
+    # return 200, with dummy file entry
+    na = [{'name': 'Not authorized', 'type': 'f', 'size': 0}]
+    response = make_response(dumps(na))
+    response.headers['Content-Type'] = 'application/json'
+    return response
 
 
 # Private util functions ########################################
@@ -431,7 +432,8 @@ def _ensure_project_codes(params, whitelist_projects):
     """ set project code filter, returns project codes and updated params """
     project_codes = deep_get(params, 'filters.project.id.is')
     if project_codes:
-        intersection = list(set(params).intersection(whitelist_projects))
+        intersection = list(set(project_codes)
+                            .intersection(whitelist_projects))
         if len(intersection) == 0:
             intersection = whitelist_projects
         params = deep_set(params, 'filters.project.id.is', intersection)

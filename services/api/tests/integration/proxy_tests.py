@@ -5,7 +5,7 @@ Test proxy
 import urllib
 import json
 import os
-# import pytest
+import pytest
 
 # assumes OS_USERNAME has access to only one project
 MY_PROJECT = 'BRCA-UK'
@@ -13,6 +13,9 @@ MY_GENESET = 'GS1'
 MY_GENE = 'ENSG00000141510'
 # this file needs to exist in BRCA-UK
 FILE_ID = "FIffb3540a357a4c23611364d4cafa5d57"  # "FI661960"
+SKIP_MANIFEST_TESTS = False
+if 'dcc.icgc.org' in os.environ['PROXY_TARGET']:
+    SKIP_MANIFEST_TESTS = True
 
 
 def test_get_download_summary_ok(client, app):
@@ -28,13 +31,27 @@ def test_get_download_summary_ok(client, app):
 
 def test_get_download_summary_not_auth(client, app):
     """
-    should respond with ok /api/v1/download/info/current/Summary
+    should respond with not auth /api/v1/download/info/current/Summary
     """
     headers = {'Authorization': _login_bearer_token(client, app),
                'Content-Type': 'application/json'}
     os.environ["SUMMARY_PROJECT_NAME"] = 'FOOBAR'
     r = client.get('/api/v1/download/info/current/Summary', headers=headers)
-    assert r.status_code == 401
+    assert r.status_code == 200
+    assert r.json[0]['name'] == 'Not authorized'
+
+
+def test_get_download_summary_not_configured(client, app):
+    """
+    should respond with not auth /api/v1/download/info/current/Summary
+    """
+    if 'SUMMARY_PROJECT_NAME' in os.environ:
+        del os.environ['SUMMARY_PROJECT_NAME']
+    headers = {'Authorization': _login_bearer_token(client, app),
+               'Content-Type': 'application/json'}
+    r = client.get('/api/v1/download/info/current/Summary', headers=headers)
+    assert r.status_code == 200
+    assert r.json[0]['name'] == 'Not authorized'
 
 
 def test_should_logout_ok(client, app):
@@ -451,6 +468,8 @@ def test_projects_genes_bad_project(client, app):
     assert r.status_code == 401
 
 
+@pytest.mark.skipif(SKIP_MANIFEST_TESTS,
+                    reason="no way of currently testing this on dcc")
 def test_get_manifests(client, app):
     headers = {'Authorization': _login_bearer_token(client, app)}
     url = '/api/v1/manifests?repos=collaboratory&format=tarball&filters={"file":{"id":{"is":"'+FILE_ID+'"}}}'  # NOQA
@@ -458,7 +477,8 @@ def test_get_manifests(client, app):
     assert r.status_code == 200
 
 
-# @pytest.mark.skip(reason="no way of currently testing this")
+@pytest.mark.skipif(SKIP_MANIFEST_TESTS,
+                    reason="no way of currently testing this on dcc")
 def test_get_manifests_exacloud(client, app):
     headers = {'Authorization': _login_bearer_token(client, app)}
     # this file is actually in the BRCA repo,
