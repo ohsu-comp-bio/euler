@@ -61,9 +61,3 @@ tests/integration/static_tests.py                      20      0   100%
 ---------------------------------------------------------------------------------
 TOTAL                                                 602      0   100%
 ```
-
-## TODO
-
-* The dcc portal will need screens to /login & /logout
-
-* The proxy will need to implement filters & redaction previously prototyped in javascript.
