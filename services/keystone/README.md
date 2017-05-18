@@ -40,8 +40,8 @@ os  domain  create testing
 # Restart the OpenStack Identity service.....
 ```
 
-Now `$ exit` out of the keystone container, `docker stop` the container, and restart it with the original `docker-compose up -d`. 
-Don't worry, the compose provisions a volume where keystone will store the domains just created. You won't lose work by just stopping and starting the container. 
+Now `$ exit` out of the keystone container, `docker stop` the container, and restart it with the original `docker-compose up -d`.
+Don't worry, the compose provisions a volume where keystone will store the domains just created. You won't lose work by just stopping and starting the container.
 
 ```
 # re-login when it comes up
@@ -167,6 +167,23 @@ os token issue  $FORUMSYS --os-project-name baml
 | project_id | 0369f74274b1499eb9257994b8b67087                                                                                                                                                             |
 | user_id    | 0b42e922b1712df2d994b91eab805aacfdaf4aedc4b8e609284c7f2dc021129b                                                                                                                             |
 +------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+
+
+projects="BRCA-US BRCA-EU BAML-US LIRI-JP LINC-JP LICA-FR CLLE-ES LIHC-US LICA-CN AML-US"
+for project in $projects; do
+  os  project  create $project --parent ccc
+done
+
+os  role create member
+
+users="walsbr"
+for user in $users; do
+  for project in $projects; do
+    echo $user, $project
+    os role add --project $project --user $user --user-domain ohsu  member
+  done
+done
 
 
 ```

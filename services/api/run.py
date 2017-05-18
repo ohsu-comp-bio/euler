@@ -299,6 +299,52 @@ def post_any(url):  # pragma nocoverage TODO
     """
     return dcc_proxy.post_any(url)
 
+
+# https://github.com/ohsu-comp-bio/data-object-schemas/blob/feature/gdc/proto/data_objects.proto
+@app.route('/api/v1/data/object/search', methods=['POST'])
+def data_object_search():
+    """
+    ga4gh::data-object-schemas data/object/search
+    """
+    return dcc_proxy.data_object_search()
+
+
+# https://github.com/ohsu-comp-bio/data-object-schemas/blob/feature/gdc/proto/data_objects.proto
+@app.route('/api/v1/data/object/<path:id>', methods=['GET'])
+def data_object_get(id):
+    """
+    ga4gh::data-object-schemas data/object
+    """
+    return dcc_proxy.data_object_get(id)
+
+
+# https://github.com/ohsu-comp-bio/data-object-schemas/blob/feature/gdc/proto/data_objects.proto
+@app.route('/api/v1/data/object', methods=['POST'])
+def data_object_post():
+    """
+    ga4gh::data-object-schemas data/object
+    """
+    return dcc_proxy.data_object_post()
+
+
+# https://github.com/ohsu-comp-bio/data-object-schemas/blob/feature/gdc/proto/data_objects.proto
+@app.route('/api/v1/datasets', methods=['POST'])
+def datasets_post():
+    """
+    ga4gh::data-object-schemas data/object
+    """
+    return dcc_proxy.datasets_post()
+
+
+# https://github.com/ohsu-comp-bio/data-object-schemas/blob/feature/gdc/proto/data_objects.proto
+@app.route('/api/v1/datasets/<path:id>', methods=['GET'])
+def datasets_get_one(id):
+    """
+    ga4gh::data-object-schemas data/object
+    """
+    return dcc_proxy.datasets_get_one(id)
+
+
 # Private util functions
 
 
