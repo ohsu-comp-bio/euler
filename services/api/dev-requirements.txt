@@ -2,7 +2,7 @@
 Flask==0.10.1
 Eve==0.6.4
 requests==2.11.1
-Flask-Cors==3.0.2
+Flask-Cors==3.0.9
 PyJWT==1.4.2
 pytest==3.0.3
 pytest-flask==0.10.0
